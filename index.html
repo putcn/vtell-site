@@ -578,14 +578,14 @@
       <a href="https://github.com/putcn/vtell/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">{{ t('footer_license') }}</a>
       <a href="https://github.com/putcn/vtell/issues" target="_blank" rel="noopener noreferrer">{{ t('footer_issues') }}</a>
     </nav>
-    <p class="footer-copy">vtell.ai — {{ t('footer_copy') }}</p>
+    <p class="footer-copy">vtell.ai &mdash; {{ t('footer_copy') }}</p>
   </footer>
 </div>
 
 <script>
 const { createApp } = Vue;
 
-// ─── i18n translations ───
+// i18n translations
 const TRANSLATIONS = {
   en: {
     nav_features: 'Features', nav_how: 'How It Works',
@@ -642,7 +642,7 @@ const TRANSLATIONS = {
       { title: '\u5f00\u6e90\u6a21\u578b\u5806\u6808', desc: '\u57fa\u4e8e LTX Video\u3001Wan \u7b49\u9876\u5c16\u5f00\u6e90\u6a21\u578b\uff0c\u914d\u5408\u4e00\u6d41 TTS \u548c LLM \u5f15\u64ce\u3002\u968f\u65f6\u66ff\u6362\u4efb\u610f\u7ec4\u4ef6\u3002', icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' },
       { title: '\u957f\u7247\u4e0e\u7cfb\u5217\u89c6\u9891', desc: '\u751f\u6210\u5177\u6709\u4e00\u81f4\u89d2\u8272\u3001\u753b\u98ce\u548c\u8fde\u8d2f\u5267\u60c5\u7684\u591a\u96c6\u7cfb\u5217\u3002\u4e0d\u4ec5\u4ec5\u662f\u5355\u4e2a\u5c0f\u89c6\u9891\u3002', icon: 'M15 10l-8 4.5V5.5L15 10zM20 6H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z' },
       { title: '\u5b8c\u5168\u81ea\u5b9a\u4e49\u6d41\u6c34\u7ebf', desc: '\u96c6\u6210 ComfyUI \u5de5\u4f5c\u6d41\u3001\u4f7f\u7528\u81ea\u5b9a\u4e49 LoRA \u6a21\u578b\uff0c\u7ec6\u7c92\u5ea6\u8c03\u8282\u573a\u666f\u8282\u594f\u3001\u58f0\u97f3\u98ce\u683c\u548c\u753b\u9762\u98ce\u683c\u3002', icon: 'M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z' },
-      { title: '\u6570\u636e\u5b8c\u5168\u672c\u5730', desc: '\u4e00\u qiè\u5728\u4f60\u7684\u672c\u5730\u673a\u5668\u4e0a\u8fd0\u884c\u3002\u60f3\u6cd5\u3001\u5267\u672c\u3001\u7d20\u6750\u5b8c\u5168\u79c1\u5bc6\u3002\u65e0\u6570\u636e\u6536\u96c6\uff0c\u65e0\u9690\u6027\u670d\u52a1\u6761\u6b3e\u3002', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' }
+      { title: '\u6570\u636e\u5b8c\u5168\u672c\u5730', desc: '\u4e00\u5207\u5728\u4f60\u7684\u672c\u5730\u673a\u5668\u4e0a\u8fd0\u884c\u3002\u60f3\u6cd5\u3001\u5267\u672c\u3001\u7d20\u6750\u5b8c\u5168\u79c1\u5bc6\u3002\u65e0\u6570\u636e\u6536\u96c6\uff0c\u65e0\u9690\u6027\u670d\u52a1\u6761\u6b3e\u3002', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' }
     ],
     stats: [
       { value: '100%', label: '\u672c\u5730\u63a8\u7406' },
@@ -672,7 +672,7 @@ const TRANSLATIONS = {
     footer_license: 'Licencia', footer_issues: 'Problemas',
     footer_copy: 'c\u00f3digo abierto, cielos abiertos',
     features: [
-      { title: 'De Idea a Video en Minutos', desc: 'Describe tu historia en unas pocas frases. vtell descompone tu idea en escenas, escribe el gui\u00f3n, genera im\u00e1genes, narr\u00f3n y m\u00fasica \u2014 todo autom\u00e1ticamente.', icon: 'M8 2h8l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm8 0v6h6M12 18v-6M9 15l3 3 3-3' },
+      { title: 'De Idea a Video en Minutos', desc: 'Describe tu historia en unas pocas frases. vtell descompone tu idea en escenas, escribe el gui\u00f3n, genera im\u00e1genes, narraci\u00f3n y m\u00fasica \u2014 todo autom\u00e1ticamente.', icon: 'M8 2h8l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm8 0v6h6M12 18v-6M9 15l3 3 3-3' },
       { title: 'Hardware de Consumo, Calidad Profesional', desc: 'Funciona localmente en una sola GPU para juegos como la RTX 4090 o 3090. Sin suscripciones a la nube, sin costes de API.', icon: 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18' },
       { title: 'Pila de Modelos de C\u00f3digo Abierto', desc: 'Construido sobre modelos abiertos de vanguardia: LTX Video, Wan y los mejores motores TTS y LLM. Cambia cualquier componente seg\u00fan evolucione el ecosistema.', icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' },
       { title: 'Soporte para Largo Plazo y Series', desc: 'Genera series multi-episodio con personajes, estilo art\u00edstico y continuidad narrativa consistentes. Crea un programa completo, no solo un clip.', icon: 'M15 10l-8 4.5V5.5L15 10zM20 6H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z' },
@@ -686,7 +686,7 @@ const TRANSLATIONS = {
     ],
     steps: [
       { title: 'Escribe tu Idea', desc: 'Empieza con 1 a 5 frases describiendo tu historia. Un documental, un drama, un tutorial, un cortometraje \u2014 cualquier formato funciona.' },
-      { title: 'vtell Escribe el Gui\u00f3n', desc: 'El agente LLM divide tu idea en escenas, escribe descripciones, genera di\u00e1logos y crea un story\u00adboard estructurado.' },
+      { title: 'vtell Escribe el Gui\u00f3n', desc: 'El agente LLM divide tu idea en escenas, escribe descripciones, genera di\u00e1logos y crea un storyboard estructurado.' },
       { title: 'Generaci\u00f3n Visual', desc: 'Cada escena se renderiza con modelos de difusi\u00f3n de video de c\u00f3digo abierto. Los fotogramas clave se generan e interpolan en clips de video suaves.' },
       { title: 'Voz y Audio', desc: 'La narraci\u00f3n se sintetiza con un modelo TTS adecuado al tono de la escena. La m\u00fasica de fondo se compone o selecciona seg\u00fan el ambiente.' },
       { title: 'Ensamblaje y Exportaci\u00f3n', desc: 'Todos los clips, el audio y las transiciones se componen en un archivo de video final listo para compartir o continuar como serie.' }
@@ -729,7 +729,7 @@ const TRANSLATIONS = {
   }
 };
 
-// ─── Cookie helpers ───
+// Cookie helpers
 function getCookie(name) {
   const m = document.cookie.match('(?:^|; )' + name + '=([^;]*)');
   return m ? decodeURIComponent(m[1]) : null;
@@ -869,7 +869,6 @@ createApp({
     this.initHeroEntrance();
   },
   directives: {
-    // v-click-outside: close dropdown when clicking outside
     clickOutside: {
       mounted(el, binding) {
         el._clickOutsideHandler = e => { if (!el.contains(e.target)) binding.value(e); };
