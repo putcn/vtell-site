@@ -103,17 +103,23 @@
       justify-content: center;
     }
 
-    #v-mask-svg {
-      width: clamp(280px, 55vw, 750px);
+    /* ─── Text-based V with metallic effects ─── */
+    #v-svg {
+      width: clamp(260px, 52vw, 720px);
       height: auto;
-      filter: drop-shadow(0 0 40px rgba(0, 229, 255, 0.35)) drop-shadow(0 0 80px rgba(124, 58, 237, 0.2));
       will-change: transform, opacity;
+      overflow: visible;
     }
 
-    /* Metallic V path styling */
-    .v-path {
-      fill: url(#metalGradient);
-      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8));
+    /* The V text character — uses SVG text for perfect glyph geometry */
+    .v-char {
+      font-family: 'Space Grotesk', 'Arial Black', sans-serif;
+      font-size: 480px;
+      font-weight: 700;
+      dominant-baseline: middle;
+      text-anchor: middle;
+      fill: url(#vMetalGrad);
+      filter: url(#vMetalFilter);
     }
 
     /* Tagline under V */
@@ -708,89 +714,103 @@
       </video>
       <div id="hero-video-fallback" aria-hidden="true"></div>
 
-      <!-- The Big V Mask -->
+      <!-- The Big V — SVG text character with metallic filter -->
       <div id="v-mask-container">
-        <svg id="v-mask-svg" viewBox="0 0 500 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <svg id="v-svg" viewBox="0 0 560 520" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" overflow="visible">
           <defs>
-            <!-- Main metallic gradient for V -->
-            <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#8892a4"/>
-              <stop offset="15%" stop-color="#d0d8e8"/>
-              <stop offset="30%" stop-color="#ffffff"/>
-              <stop offset="45%" stop-color="#a0aec0"/>
-              <stop offset="60%" stop-color="#e8ecf2"/>
-              <stop offset="75%" stop-color="#c0c8d8"/>
-              <stop offset="90%" stop-color="#ffffff"/>
-              <stop offset="100%" stop-color="#7a8494"/>
+            <!-- Multi-stop metallic gradient: brushed silver with highlight bands -->
+            <linearGradient id="vMetalGrad" x1="0%" y1="0%" x2="60%" y2="100%" gradientUnits="userSpaceOnUse"
+                            x1="80" y1="20" x2="480" y2="500">
+              <stop offset="0%"   stop-color="#6b7280"/>
+              <stop offset="12%"  stop-color="#d1d5db"/>
+              <stop offset="25%"  stop-color="#f9fafb"/>
+              <stop offset="38%"  stop-color="#9ca3af"/>
+              <stop offset="50%"  stop-color="#e5e7eb"/>
+              <stop offset="62%"  stop-color="#ffffff"/>
+              <stop offset="75%"  stop-color="#d1d5db"/>
+              <stop offset="88%"  stop-color="#9ca3af"/>
+              <stop offset="100%" stop-color="#6b7280"/>
             </linearGradient>
-            <!-- Aurora glow gradient -->
-            <linearGradient id="auroraGlow" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.6"/>
-              <stop offset="50%" stop-color="#7c3aed" stop-opacity="0.4"/>
-              <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.6"/>
+
+            <!-- Animated shimmer sweep gradient -->
+            <linearGradient id="vShimmerGrad" gradientUnits="userSpaceOnUse"
+                            x1="0" y1="0" x2="560" y2="0">
+              <stop offset="0%"   stop-color="rgba(255,255,255,0)"/>
+              <stop offset="40%"  stop-color="rgba(255,255,255,0)"/>
+              <stop offset="50%"  stop-color="rgba(255,255,255,0.55)"/>
+              <stop offset="60%"  stop-color="rgba(255,255,255,0)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0)">
+              </stop>
+              <animateTransform attributeName="gradientTransform"
+                type="translate" from="-560 0" to="560 0"
+                dur="3.5s" repeatCount="indefinite"/>
             </linearGradient>
-            <!-- Shimmer animation on gradient -->
-            <linearGradient id="metalShimmerGrad" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#6b7280">
-                <animate attributeName="offset" values="0;0.3;0" dur="3s" repeatCount="indefinite"/>
-              </stop>
-              <stop offset="35%" stop-color="#f3f4f6">
-                <animate attributeName="offset" values="0.35;0.65;0.35" dur="3s" repeatCount="indefinite"/>
-              </stop>
-              <stop offset="70%" stop-color="#d1d5db">
-                <animate attributeName="offset" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
-              </stop>
-              <stop offset="100%" stop-color="#9ca3af">
-                <animate attributeName="offset" values="1;0.7;1" dur="3s" repeatCount="indefinite"/>
-              </stop>
+
+            <!-- Aurora edge tint gradient (top-to-bottom) -->
+            <linearGradient id="vAuroraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stop-color="#00e5ff" stop-opacity="0.45"/>
+              <stop offset="50%"  stop-color="#7c3aed" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.35"/>
             </linearGradient>
-            <!-- Drop shadow filter -->
-            <filter id="vGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="rgba(0,0,0,0.7)" flood-opacity="0.8"/>
-              <feDropShadow dx="0" dy="0" stdDeviation="20" flood-color="rgba(0,229,255,0.3)" flood-opacity="0.6"/>
-            </filter>
-            <!-- Bevel effect filter -->
-            <filter id="metalBevel" x="-5%" y="-5%" width="110%" height="110%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
-              <feSpecularLighting in="blur" surfaceScale="6" specularConstant="1.2" specularExponent="25" result="specular">
-                <fePointLight x="150" y="-100" z="200"/>
+
+            <!-- Clip path matching the V glyph for shimmer overlay -->
+            <clipPath id="vClip">
+              <text class="v-char" x="280" y="440">V</text>
+            </clipPath>
+
+            <!-- Metallic bevel + specular lighting filter -->
+            <filter id="vMetalFilter" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+              <!-- Emboss / bevel from alpha -->
+              <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="alphaBlur"/>
+              <!-- Primary specular highlight — top-left light source -->
+              <feSpecularLighting in="alphaBlur" surfaceScale="7" specularConstant="1.4"
+                                  specularExponent="30" result="specular1" lighting-color="#ffffff">
+                <fePointLight x="100" y="-80" z="220"/>
               </feSpecularLighting>
-              <feComposite in="specular" in2="SourceAlpha" operator="in" result="specularOut"/>
-              <feBlend in="SourceGraphic" in2="specularOut" mode="screen"/>
+              <feComposite in="specular1" in2="SourceAlpha" operator="in" result="spec1Clipped"/>
+              <!-- Secondary softer highlight — right-bottom -->
+              <feSpecularLighting in="alphaBlur" surfaceScale="5" specularConstant="0.6"
+                                  specularExponent="15" result="specular2" lighting-color="#00e5ff">
+                <fePointLight x="500" y="600" z="180"/>
+              </feSpecularLighting>
+              <feComposite in="specular2" in2="SourceAlpha" operator="in" result="spec2Clipped"/>
+              <!-- Merge: base + primary spec + secondary spec -->
+              <feMerge>
+                <feMergeNode in="SourceGraphic"/>
+                <feMergeNode in="spec1Clipped"/>
+                <feMergeNode in="spec2Clipped"/>
+              </feMerge>
+            </filter>
+
+            <!-- Outer glow filter -->
+            <filter id="vGlowFilter" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="0" stdDeviation="28" flood-color="rgba(0,229,255,0.35)"/>
+              <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="rgba(0,0,0,0.75)"/>
             </filter>
           </defs>
 
-          <!-- V shape: thick, prominent letter -->
-          <!-- Main filled V body -->
-          <path class="v-path"
-            d="M30 30
-               L30 70
-               L220 390
-               L250 390
-               L470 70
-               L470 30
-               L430 30
-               L250 330
-               L70 30
-               Z"
-            filter="url(#vGlow)"
-          />
-          <!-- Aurora edge highlight on left arm -->
-          <path
-            d="M30 30 L70 30 L250 330 L220 390 L30 70 Z"
-            fill="url(#auroraGlow)"
-            opacity="0.35"
-          />
-          <!-- Aurora edge highlight on right arm -->
-          <path
-            d="M470 30 L430 30 L250 330 L280 390 L470 70 Z"
-            fill="url(#auroraGlow)"
-            opacity="0.25"
-          />
-          <!-- Top edge shine line left -->
-          <line x1="32" y1="32" x2="68" y2="32" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round"/>
-          <!-- Top edge shine line right -->
-          <line x1="432" y1="32" x2="468" y2="32" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Glow halo layer (rendered behind V) -->
+          <text class="v-char" x="280" y="440"
+                fill="rgba(0,229,255,0.08)"
+                filter="url(#vGlowFilter)"
+                style="font-family:'Space Grotesk','Arial Black',sans-serif;font-size:480px;font-weight:700;dominant-baseline:middle;text-anchor:middle;">V</text>
+
+          <!-- Main V — metallic gradient fill + specular bevel filter -->
+          <text class="v-char" x="280" y="440"
+                fill="url(#vMetalGrad)"
+                filter="url(#vMetalFilter)"
+                style="font-family:'Space Grotesk','Arial Black',sans-serif;font-size:480px;font-weight:700;dominant-baseline:middle;text-anchor:middle;">V</text>
+
+          <!-- Aurora color tint overlay (blended on top) -->
+          <text x="280" y="440"
+                fill="url(#vAuroraGrad)"
+                opacity="0.28"
+                style="font-family:'Space Grotesk','Arial Black',sans-serif;font-size:480px;font-weight:700;dominant-baseline:middle;text-anchor:middle;mix-blend-mode:screen;">V</text>
+
+          <!-- Animated shimmer sweep — white highlight travelling left→right -->
+          <rect x="0" y="0" width="560" height="520"
+                fill="url(#vShimmerGrad)"
+                clip-path="url(#vClip)"/>
         </svg>
       </div>
 
@@ -1050,7 +1070,7 @@
 
       // ─── Hero Entrance ───
       initHeroEntrance() {
-        const vSvg = document.getElementById('v-mask-svg');
+        const vSvg = document.getElementById('v-svg');
         const tagline = document.getElementById('hero-tagline');
 
         // Initial state
