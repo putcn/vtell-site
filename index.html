@@ -94,29 +94,36 @@
         transparent 100%);
     }
 
-    /* The V mask container */
+    /* The V mask container — absolutely centered in hero */
     #v-mask-container {
-      position: relative;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       z-index: 3;
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 100%;
+      pointer-events: none;
     }
 
     /* ─── Text-based V with metallic effects ─── */
     #v-svg {
-      width: clamp(260px, 52vw, 720px);
+      width: clamp(340px, 68vw, 940px);
       height: auto;
       will-change: transform, opacity;
       overflow: visible;
+      display: block;
+      margin: 0 auto;
     }
 
-    /* The V text character — uses SVG text for perfect glyph geometry */
+    /* The V text character */
     .v-char {
       font-family: 'Space Grotesk', 'Arial Black', sans-serif;
       font-size: 480px;
       font-weight: 700;
-      dominant-baseline: middle;
+      dominant-baseline: auto;
       text-anchor: middle;
       fill: url(#vMetalGrad);
       filter: url(#vMetalFilter);
@@ -129,8 +136,9 @@
       left: 50%;
       transform: translateX(-50%);
       text-align: center;
-      z-index: 3;
+      z-index: 4;
       opacity: 0;
+      white-space: nowrap;
     }
 
     #hero-tagline h1 {
@@ -654,11 +662,14 @@
       #site-footer { flex-direction: column; text-align: center; }
       .footer-links { flex-wrap: wrap; justify-content: center; }
       #features, #stats, #how-it-works, #cta-section { padding: var(--space-12) var(--space-4); }
+      #v-svg { width: clamp(280px, 88vw, 640px) !important; }
     }
 
     @media (max-width: 480px) {
       .feature-item { padding: var(--space-8) 0; }
       .step-content p { max-width: 100%; }
+      #hero-tagline h1 { font-size: clamp(1rem, 4vw, 1.5rem); white-space: normal; }
+      #v-svg { width: clamp(260px, 92vw, 480px) !important; }
     }
 
     /* ─── Noise texture overlay ─── */
@@ -681,7 +692,6 @@
     <!-- ─── Fixed Header (slides in on scroll) ─── -->
     <header id="site-header" :class="{ visible: headerVisible }">
       <a href="#" id="header-logo" @click.prevent="scrollToTop">
-        <!-- Small V logo for header -->
         <svg :class="{ show: headerVisible }" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="vtell logo">
           <defs>
             <linearGradient id="headerVGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -708,18 +718,15 @@
 
     <!-- ─── Hero Section ─── -->
     <section id="hero" aria-label="Hero">
-      <!-- Background video (muted autoplay loop) -->
       <video id="hero-video" autoplay muted loop playsinline poster="" aria-hidden="true">
-        <!-- No actual video source — will gracefully degrade to fallback gradient -->
       </video>
       <div id="hero-video-fallback" aria-hidden="true"></div>
 
-      <!-- The Big V — SVG text character with metallic filter -->
+      <!-- The Big V -->
       <div id="v-mask-container">
-        <svg id="v-svg" viewBox="0 0 560 520" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" overflow="visible">
+        <svg id="v-svg" viewBox="0 0 560 500" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" overflow="visible">
           <defs>
-            <!-- Multi-stop metallic gradient: brushed silver with highlight bands -->
-            <linearGradient id="vMetalGrad" x1="0%" y1="0%" x2="60%" y2="100%" gradientUnits="userSpaceOnUse"
+            <linearGradient id="vMetalGrad" gradientUnits="userSpaceOnUse"
                             x1="80" y1="20" x2="480" y2="500">
               <stop offset="0%"   stop-color="#6b7280"/>
               <stop offset="12%"  stop-color="#d1d5db"/>
@@ -732,49 +739,43 @@
               <stop offset="100%" stop-color="#6b7280"/>
             </linearGradient>
 
-            <!-- Animated shimmer sweep gradient -->
             <linearGradient id="vShimmerGrad" gradientUnits="userSpaceOnUse"
                             x1="0" y1="0" x2="560" y2="0">
               <stop offset="0%"   stop-color="rgba(255,255,255,0)"/>
               <stop offset="40%"  stop-color="rgba(255,255,255,0)"/>
               <stop offset="50%"  stop-color="rgba(255,255,255,0.55)"/>
               <stop offset="60%"  stop-color="rgba(255,255,255,0)"/>
-              <stop offset="100%" stop-color="rgba(255,255,255,0)">
-              </stop>
+              <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
               <animateTransform attributeName="gradientTransform"
                 type="translate" from="-560 0" to="560 0"
                 dur="3.5s" repeatCount="indefinite"/>
             </linearGradient>
 
-            <!-- Aurora edge tint gradient (top-to-bottom) -->
             <linearGradient id="vAuroraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%"   stop-color="#00e5ff" stop-opacity="0.45"/>
               <stop offset="50%"  stop-color="#7c3aed" stop-opacity="0.25"/>
               <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.35"/>
             </linearGradient>
 
-            <!-- Clip path matching the V glyph for shimmer overlay -->
             <clipPath id="vClip">
-              <text class="v-char" x="280" y="440">V</text>
+              <text font-family="'Space Grotesk','Arial Black',sans-serif"
+                    font-size="480" font-weight="700"
+                    x="280" y="400"
+                    text-anchor="middle">V</text>
             </clipPath>
 
-            <!-- Metallic bevel + specular lighting filter -->
             <filter id="vMetalFilter" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-              <!-- Emboss / bevel from alpha -->
               <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="alphaBlur"/>
-              <!-- Primary specular highlight — top-left light source -->
               <feSpecularLighting in="alphaBlur" surfaceScale="7" specularConstant="1.4"
                                   specularExponent="30" result="specular1" lighting-color="#ffffff">
                 <fePointLight x="100" y="-80" z="220"/>
               </feSpecularLighting>
               <feComposite in="specular1" in2="SourceAlpha" operator="in" result="spec1Clipped"/>
-              <!-- Secondary softer highlight — right-bottom -->
               <feSpecularLighting in="alphaBlur" surfaceScale="5" specularConstant="0.6"
                                   specularExponent="15" result="specular2" lighting-color="#00e5ff">
                 <fePointLight x="500" y="600" z="180"/>
               </feSpecularLighting>
               <feComposite in="specular2" in2="SourceAlpha" operator="in" result="spec2Clipped"/>
-              <!-- Merge: base + primary spec + secondary spec -->
               <feMerge>
                 <feMergeNode in="SourceGraphic"/>
                 <feMergeNode in="spec1Clipped"/>
@@ -782,39 +783,45 @@
               </feMerge>
             </filter>
 
-            <!-- Outer glow filter -->
             <filter id="vGlowFilter" x="-20%" y="-20%" width="140%" height="140%">
               <feDropShadow dx="0" dy="0" stdDeviation="28" flood-color="rgba(0,229,255,0.35)"/>
               <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="rgba(0,0,0,0.75)"/>
             </filter>
           </defs>
 
-          <!-- Glow halo layer (rendered behind V) -->
-          <text class="v-char" x="280" y="440"
+          <!-- Glow halo -->
+          <text font-family="'Space Grotesk','Arial Black',sans-serif"
+                font-size="480" font-weight="700"
+                x="280" y="400"
+                text-anchor="middle"
                 fill="rgba(0,229,255,0.08)"
-                filter="url(#vGlowFilter)"
-                style="font-family:'Space Grotesk','Arial Black',sans-serif;font-size:480px;font-weight:700;dominant-baseline:middle;text-anchor:middle;">V</text>
+                filter="url(#vGlowFilter)">V</text>
 
-          <!-- Main V — metallic gradient fill + specular bevel filter -->
-          <text class="v-char" x="280" y="440"
+          <!-- Main V — metallic gradient -->
+          <text font-family="'Space Grotesk','Arial Black',sans-serif"
+                font-size="480" font-weight="700"
+                x="280" y="400"
+                text-anchor="middle"
                 fill="url(#vMetalGrad)"
-                filter="url(#vMetalFilter)"
-                style="font-family:'Space Grotesk','Arial Black',sans-serif;font-size:480px;font-weight:700;dominant-baseline:middle;text-anchor:middle;">V</text>
+                filter="url(#vMetalFilter)">V</text>
 
-          <!-- Aurora color tint overlay (blended on top) -->
-          <text x="280" y="440"
+          <!-- Aurora tint overlay -->
+          <text font-family="'Space Grotesk','Arial Black',sans-serif"
+                font-size="480" font-weight="700"
+                x="280" y="400"
+                text-anchor="middle"
                 fill="url(#vAuroraGrad)"
                 opacity="0.28"
-                style="font-family:'Space Grotesk','Arial Black',sans-serif;font-size:480px;font-weight:700;dominant-baseline:middle;text-anchor:middle;mix-blend-mode:screen;">V</text>
+                style="mix-blend-mode:screen;">V</text>
 
-          <!-- Animated shimmer sweep — white highlight travelling left→right -->
-          <rect x="0" y="0" width="560" height="520"
+          <!-- Shimmer sweep -->
+          <rect x="0" y="0" width="560" height="500"
                 fill="url(#vShimmerGrad)"
                 clip-path="url(#vClip)"/>
         </svg>
       </div>
 
-      <!-- Hero tagline (fades in after load) -->
+      <!-- Hero tagline -->
       <div id="hero-tagline">
         <h1 class="metal-text">Video Story Teller</h1>
         <p>From a simple idea to a full video series — on your own hardware</p>
@@ -988,7 +995,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       },
 
-      // ─── Aurora Canvas ───
       initAurora() {
         const canvas = document.getElementById('aurora-canvas');
         const ctx = canvas.getContext('2d');
@@ -1003,8 +1009,8 @@
         window.addEventListener('resize', resize);
 
         const auroras = [
-          { color: [0, 229, 255],   speed: 0.0003, amp: 0.35, freq: 1.2, phase: 0 },
-          { color: [124, 58, 237],  speed: 0.0002, amp: 0.28, freq: 0.8, phase: 2.1 },
+          { color: [0, 229, 255],   speed: 0.0003,  amp: 0.35, freq: 1.2, phase: 0 },
+          { color: [124, 58, 237],  speed: 0.0002,  amp: 0.28, freq: 0.8, phase: 2.1 },
           { color: [16, 185, 129],  speed: 0.00025, amp: 0.22, freq: 1.5, phase: 4.2 },
           { color: [6, 182, 212],   speed: 0.00035, amp: 0.18, freq: 0.6, phase: 1.0 },
         ];
@@ -1013,7 +1019,6 @@
           time += 1;
           ctx.clearRect(0, 0, width, height);
 
-          // Deep space bg
           const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
           bgGrad.addColorStop(0, '#04060a');
           bgGrad.addColorStop(0.5, '#060810');
@@ -1021,7 +1026,6 @@
           ctx.fillStyle = bgGrad;
           ctx.fillRect(0, 0, width, height);
 
-          // Draw aurora bands
           auroras.forEach(a => {
             const centerY = height * (0.3 + a.amp * Math.sin(time * a.speed + a.phase));
             const grad = ctx.createLinearGradient(0, centerY - height * 0.3, 0, centerY + height * 0.3);
@@ -1048,7 +1052,6 @@
             ctx.fill();
           });
 
-          // Stars
           if (time % 3 === 0) {
             ctx.save();
             for (let i = 0; i < 3; i++) {
@@ -1068,26 +1071,21 @@
         draw();
       },
 
-      // ─── Hero Entrance ───
       initHeroEntrance() {
         const vSvg = document.getElementById('v-svg');
         const tagline = document.getElementById('hero-tagline');
 
-        // Initial state
         gsap.set(vSvg, { scale: 0.7, opacity: 0, transformOrigin: '50% 50%' });
         gsap.set(tagline, { opacity: 0, y: 20 });
 
-        // Entrance animation
         gsap.timeline({ delay: 0.3 })
           .to(vSvg, { scale: 1, opacity: 1, duration: 1.4, ease: 'power3.out' })
           .to(tagline, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }, '-=0.4');
       },
 
-      // ─── Scroll Animations ───
       initScrollAnimations() {
         gsap.registerPlugin(ScrollTrigger);
 
-        // ── Header slides down when hero exits ──
         ScrollTrigger.create({
           trigger: '#hero',
           start: 'bottom 60%',
@@ -1095,7 +1093,6 @@
           onLeaveBack: () => { this.headerVisible = false; }
         });
 
-        // ── V shrinks and slides up on scroll ──
         const vContainer = document.getElementById('v-mask-container');
         const heroTagline = document.getElementById('hero-tagline');
 
@@ -1110,7 +1107,6 @@
           .to(vContainer, { y: '-60vh', scale: 0.1, opacity: 0, ease: 'power2.in' }, 0)
           .to(heroTagline, { opacity: 0, y: -30, ease: 'power2.in' }, 0);
 
-        // ── Feature items reveal one by one ──
         document.querySelectorAll('.feature-item').forEach((el, i) => {
           gsap.to(el, {
             opacity: 1,
@@ -1125,7 +1121,6 @@
           });
         });
 
-        // ── Stat items ──
         document.querySelectorAll('.stat-item').forEach((el, i) => {
           gsap.to(el, {
             opacity: 1,
@@ -1141,7 +1136,6 @@
           });
         });
 
-        // ── Steps ──
         document.querySelectorAll('.step-item').forEach((el, i) => {
           gsap.to(el, {
             opacity: 1,
@@ -1157,7 +1151,6 @@
           });
         });
 
-        // ── Footer ──
         gsap.to('#site-footer', {
           opacity: 1,
           clipPath: 'inset(0% 0 0 0)',
