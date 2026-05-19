@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>vtell — Video Story Teller</title>
-  <meta name="description" content="Turn a simple idea into long-form, series videos using open-source models and consumer hardware. vtell democratizes video creation." />
+  <meta name="description" content="Turn a simple idea into long-form, series videos using open-source models and consumer hardware." />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 6 L16 26 L28 6' fill='none' stroke='%2300e5ff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,6 @@
   <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
   <script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
   <style>
-    /* ─── Reset & Base ─── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
@@ -23,8 +22,6 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
-
-    /* ─── CSS Variables ─── */
     :root {
       --aurora-1: #00e5ff;
       --aurora-2: #7c3aed;
@@ -32,626 +29,352 @@
       --aurora-4: #10b981;
       --metal-light: #e8ecf2;
       --metal-mid: #a0aec0;
-      --metal-dark: #2d3748;
-      --metal-shine: #ffffff;
       --bg-deep: #04060a;
       --bg-mid: #080c14;
       --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
       --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
       --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
       --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
-      --text-hero: clamp(4rem, 1rem + 10vw, 12rem);
-      --space-2: 0.5rem;
-      --space-4: 1rem;
-      --space-6: 1.5rem;
-      --space-8: 2rem;
-      --space-12: 3rem;
-      --space-16: 4rem;
-      --space-24: 6rem;
-      --radius-md: 0.5rem;
-      --radius-lg: 0.75rem;
+      --space-2: 0.5rem; --space-4: 1rem; --space-6: 1.5rem;
+      --space-8: 2rem; --space-12: 3rem; --space-16: 4rem; --space-24: 6rem;
+      --radius-md: 0.5rem; --radius-lg: 0.75rem;
     }
 
-    /* ─── Aurora Background Canvas ─── */
-    #aurora-canvas {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-    }
+    /* Aurora */
+    #aurora-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
-    /* ─── Hero Section ─── */
+    /* Hero */
     #hero {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      z-index: 1;
+      position: relative; width: 100vw; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; z-index: 1;
     }
-
-    /* Background video behind hero */
     #hero-video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.18;
-      z-index: 1;
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; opacity: 0.18; z-index: 1;
     }
-
-    /* Video fallback gradient */
     #hero-video-fallback {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
+      position: absolute; inset: 0; z-index: 1;
       background: radial-gradient(ellipse 80% 60% at 50% 50%,
-        oklch(0.15 0.06 230 / 0.8) 0%,
-        oklch(0.08 0.04 250 / 0.6) 50%,
-        transparent 100%);
+        oklch(0.15 0.06 230 / 0.8) 0%, oklch(0.08 0.04 250 / 0.6) 50%, transparent 100%);
     }
-
-    /* The V mask container — absolutely centered in hero */
     #v-mask-container {
-      position: absolute;
-      top: 50%;
-      left: 50%;
+      position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      z-index: 3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      pointer-events: none;
+      z-index: 3; display: flex; align-items: center;
+      justify-content: center; width: 100%; pointer-events: none;
     }
-
-    /* ─── Text-based V with metallic effects ─── */
     #v-svg {
-      width: clamp(340px, 68vw, 940px);
-      height: auto;
-      will-change: transform, opacity;
-      overflow: visible;
-      display: block;
-      margin: 0 auto;
+      width: clamp(340px, 68vw, 940px); height: auto;
+      will-change: transform, opacity; overflow: visible; display: block; margin: 0 auto;
     }
-
-    /* The V text character */
-    .v-char {
-      font-family: 'Space Grotesk', 'Arial Black', sans-serif;
-      font-size: 480px;
-      font-weight: 700;
-      dominant-baseline: auto;
-      text-anchor: middle;
-      fill: url(#vMetalGrad);
-      filter: url(#vMetalFilter);
-    }
-
-    /* Tagline under V */
     #hero-tagline {
-      position: absolute;
-      bottom: clamp(var(--space-8), 8vh, var(--space-16));
-      left: 50%;
-      transform: translateX(-50%);
-      text-align: center;
-      z-index: 4;
-      opacity: 0;
-      white-space: nowrap;
+      position: absolute; bottom: clamp(var(--space-8), 8vh, var(--space-16));
+      left: 50%; transform: translateX(-50%);
+      text-align: center; z-index: 4; opacity: 0; white-space: nowrap;
     }
-
     #hero-tagline h1 {
-      font-size: var(--text-xl);
-      font-weight: 300;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--metal-light);
-      text-shadow: 0 0 30px rgba(0, 229, 255, 0.5);
+      font-size: var(--text-xl); font-weight: 300;
+      letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--metal-light); text-shadow: 0 0 30px rgba(0,229,255,0.5);
     }
-
     #hero-tagline p {
-      font-size: var(--text-base);
-      color: var(--metal-mid);
-      margin-top: var(--space-2);
-      letter-spacing: 0.1em;
-      max-width: 55ch;
+      font-size: var(--text-base); color: var(--metal-mid);
+      margin-top: var(--space-2); letter-spacing: 0.1em; max-width: 55ch;
     }
-
     .scroll-hint {
-      position: absolute;
-      bottom: var(--space-6);
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--space-2);
-      color: var(--metal-mid);
-      font-size: 0.75rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      opacity: 0.7;
+      position: absolute; bottom: var(--space-6); left: 50%;
+      transform: translateX(-50%); z-index: 10;
+      display: flex; flex-direction: column; align-items: center;
+      gap: var(--space-2); color: var(--metal-mid); font-size: 0.75rem;
+      letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.7;
       animation: scrollBounce 2s ease-in-out infinite;
     }
-
     @keyframes scrollBounce {
       0%, 100% { transform: translateX(-50%) translateY(0); }
       50% { transform: translateX(-50%) translateY(6px); }
     }
-
     .scroll-hint svg { opacity: 0.6; }
 
-    /* ─── Sticky Header ─── */
+    /* Header */
     #site-header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
       padding: var(--space-4) var(--space-8);
       transform: translateY(-100%);
       transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
       background: linear-gradient(180deg, rgba(4,6,10,0.95) 0%, rgba(4,6,10,0) 100%);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
-
-    #site-header.visible {
-      transform: translateY(0);
-    }
-
+    #site-header.visible { transform: translateY(0); }
     #header-logo {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      text-decoration: none;
-      color: var(--metal-light);
+      display: flex; align-items: center; gap: var(--space-2);
+      text-decoration: none; color: var(--metal-light);
     }
-
-    #header-logo svg {
-      width: 32px;
-      height: 32px;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
+    #header-logo svg { width: 32px; height: 32px; opacity: 0; transition: opacity 0.3s; }
     #header-logo svg.show { opacity: 1; }
-
     #header-logo .logo-text {
-      font-family: 'Space Mono', monospace;
-      font-size: 1.25rem;
-      font-weight: 700;
+      font-family: 'Space Mono', monospace; font-size: 1.25rem; font-weight: 700;
       letter-spacing: 0.05em;
       background: linear-gradient(135deg, #e8ecf2, #00e5ff, #e8ecf2);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-
+    #header-right {
+      display: flex; align-items: center; gap: var(--space-6);
+    }
     #header-nav {
-      display: flex;
-      align-items: center;
-      gap: var(--space-6);
+      display: flex; align-items: center; gap: var(--space-6);
     }
-
     #header-nav a {
-      color: var(--metal-mid);
-      text-decoration: none;
-      font-size: 0.875rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      transition: color 0.2s;
+      color: var(--metal-mid); text-decoration: none; font-size: 0.875rem;
+      letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s;
     }
-
     #header-nav a:hover { color: var(--aurora-1); }
-
     .header-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
+      display: inline-flex; align-items: center; gap: var(--space-2);
       padding: 0.5rem 1.25rem;
-      border: 1px solid rgba(0, 229, 255, 0.4);
-      border-radius: var(--radius-md);
-      background: rgba(0, 229, 255, 0.05);
-      color: var(--aurora-1) !important;
+      border: 1px solid rgba(0,229,255,0.4); border-radius: var(--radius-md);
+      background: rgba(0,229,255,0.05); color: var(--aurora-1) !important;
       font-size: 0.875rem !important;
       transition: background 0.2s, border-color 0.2s, box-shadow 0.2s !important;
     }
-
     .header-cta:hover {
-      background: rgba(0, 229, 255, 0.12) !important;
-      border-color: rgba(0, 229, 255, 0.7) !important;
-      box-shadow: 0 0 20px rgba(0, 229, 255, 0.15) !important;
+      background: rgba(0,229,255,0.12) !important;
+      border-color: rgba(0,229,255,0.7) !important;
+      box-shadow: 0 0 20px rgba(0,229,255,0.15) !important;
       color: var(--aurora-1) !important;
     }
 
-    /* ─── Features Section ─── */
-    #features {
+    /* Language Switcher */
+    .lang-switcher {
       position: relative;
-      z-index: 2;
-      min-height: 100vh;
-      padding: var(--space-24) var(--space-8);
+      display: flex;
+      align-items: center;
     }
+    .lang-btn {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.04);
+      color: var(--metal-mid); font-size: 0.8rem;
+      letter-spacing: 0.06em; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .lang-btn:hover { border-color: rgba(0,229,255,0.4); color: var(--aurora-1); }
+    .lang-btn svg { flex-shrink: 0; }
+    .lang-dropdown {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      min-width: 140px;
+      background: rgba(8,12,20,0.96); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      overflow: hidden;
+      z-index: 200;
+      transform-origin: top right;
+      animation: dropIn 0.18s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    @keyframes dropIn {
+      from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .lang-option {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.6rem 1rem; cursor: pointer;
+      font-size: 0.875rem; color: var(--metal-mid);
+      transition: background 0.15s, color 0.15s;
+      border: none; background: none; width: 100%; text-align: left;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .lang-option:hover { background: rgba(0,229,255,0.07); color: var(--metal-light); }
+    .lang-option.active { color: var(--aurora-1); }
+    .lang-option .flag { font-size: 1rem; line-height: 1; }
 
+    /* Sections */
+    #features {
+      position: relative; z-index: 2;
+      min-height: 100vh; padding: var(--space-24) var(--space-8);
+    }
     .section-label {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.75rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--aurora-1);
-      opacity: 0.8;
-      margin-bottom: var(--space-4);
+      font-family: 'Space Mono', monospace; font-size: 0.75rem;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--aurora-1); opacity: 0.8; margin-bottom: var(--space-4);
     }
-
     .section-title {
-      font-size: var(--text-2xl);
-      font-weight: 300;
-      color: var(--metal-light);
-      line-height: 1.1;
-      margin-bottom: var(--space-12);
+      font-size: var(--text-2xl); font-weight: 300;
+      color: var(--metal-light); line-height: 1.1; margin-bottom: var(--space-12);
     }
-
     .section-title strong {
       font-weight: 700;
       background: linear-gradient(135deg, #e8ecf2 0%, #00e5ff 50%, #7c3aed 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-
-    /* Feature items — reveal one by one */
     .feature-item {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-8);
-      align-items: center;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: var(--space-8); align-items: center;
       padding: var(--space-12) 0;
       border-top: 1px solid rgba(255,255,255,0.06);
-      opacity: 0;
-      clip-path: inset(100% 0 0 0);
+      opacity: 0; clip-path: inset(100% 0 0 0);
     }
-
     .feature-item:last-child { border-bottom: 1px solid rgba(255,255,255,0.06); }
-
     .feature-number {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.75rem;
-      letter-spacing: 0.2em;
-      color: var(--aurora-1);
-      opacity: 0.5;
-      margin-bottom: var(--space-4);
+      font-family: 'Space Mono', monospace; font-size: 0.75rem;
+      letter-spacing: 0.2em; color: var(--aurora-1); opacity: 0.5; margin-bottom: var(--space-4);
     }
-
     .feature-name {
-      font-size: var(--text-xl);
-      font-weight: 500;
-      color: var(--metal-light);
-      margin-bottom: var(--space-4);
-      line-height: 1.2;
+      font-size: var(--text-xl); font-weight: 500;
+      color: var(--metal-light); margin-bottom: var(--space-4); line-height: 1.2;
     }
-
-    .feature-desc {
-      font-size: var(--text-base);
-      color: var(--metal-mid);
-      line-height: 1.7;
-      max-width: 48ch;
-    }
-
+    .feature-desc { font-size: var(--text-base); color: var(--metal-mid); line-height: 1.7; max-width: 48ch; }
     .feature-visual {
-      position: relative;
-      height: 200px;
-      border-radius: var(--radius-lg);
+      position: relative; height: 200px; border-radius: var(--radius-lg);
       overflow: hidden;
       background: linear-gradient(135deg, rgba(0,229,255,0.06) 0%, rgba(124,58,237,0.08) 100%);
       border: 1px solid rgba(255,255,255,0.07);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
     }
-
-    .feature-visual svg {
-      width: 64px;
-      height: 64px;
-      opacity: 0.4;
-      color: var(--aurora-1);
-    }
-
+    .feature-visual svg { width: 64px; height: 64px; opacity: 0.4; color: var(--aurora-1); }
     .feature-visual::before {
-      content: '';
-      position: absolute;
-      inset: 0;
+      content: ''; position: absolute; inset: 0;
       background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(0,229,255,0.05) 0%, transparent 70%);
     }
 
-    /* ─── Stats / Numbers bar ─── */
+    /* Stats */
     #stats {
-      position: relative;
-      z-index: 2;
-      padding: var(--space-24) var(--space-8);
+      position: relative; z-index: 2; padding: var(--space-24) var(--space-8);
       background: linear-gradient(180deg, transparent 0%, rgba(0,229,255,0.03) 50%, transparent 100%);
     }
-
     .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-8);
-      max-width: 960px;
-      margin: 0 auto;
-      text-align: center;
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: var(--space-8); max-width: 960px; margin: 0 auto; text-align: center;
     }
-
     .stat-item {
       padding: var(--space-8);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: var(--radius-lg);
-      background: rgba(8,12,20,0.6);
-      backdrop-filter: blur(8px);
-      opacity: 0;
-      clip-path: inset(100% 0 0 0);
+      border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-lg);
+      background: rgba(8,12,20,0.6); backdrop-filter: blur(8px);
+      opacity: 0; clip-path: inset(100% 0 0 0);
     }
-
     .stat-value {
-      font-family: 'Space Mono', monospace;
-      font-size: var(--text-2xl);
-      font-weight: 700;
+      font-family: 'Space Mono', monospace; font-size: var(--text-2xl); font-weight: 700;
       background: linear-gradient(135deg, #e8ecf2, #00e5ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      display: block;
-      margin-bottom: var(--space-2);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      display: block; margin-bottom: var(--space-2);
     }
+    .stat-label { font-size: var(--text-base); color: var(--metal-mid); }
 
-    .stat-label {
-      font-size: var(--text-base);
-      color: var(--metal-mid);
-    }
-
-    /* ─── How It Works ─── */
+    /* How It Works */
     #how-it-works {
-      position: relative;
-      z-index: 2;
-      padding: var(--space-24) var(--space-8);
-      max-width: 960px;
-      margin: 0 auto;
+      position: relative; z-index: 2; padding: var(--space-24) var(--space-8);
+      max-width: 960px; margin: 0 auto;
     }
-
     .steps-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      margin-top: var(--space-12);
-      position: relative;
+      display: flex; flex-direction: column; gap: 0;
+      margin-top: var(--space-12); position: relative;
     }
-
     .steps-list::before {
-      content: '';
-      position: absolute;
-      left: 20px;
-      top: 0;
-      bottom: 0;
-      width: 1px;
+      content: ''; position: absolute; left: 20px; top: 0; bottom: 0; width: 1px;
       background: linear-gradient(180deg, var(--aurora-1), var(--aurora-2), transparent);
       opacity: 0.3;
     }
-
     .step-item {
-      display: flex;
-      gap: var(--space-8);
-      padding: var(--space-8) 0;
-      opacity: 0;
-      clip-path: inset(100% 0 0 0);
+      display: flex; gap: var(--space-8); padding: var(--space-8) 0;
+      opacity: 0; clip-path: inset(100% 0 0 0);
     }
-
     .step-num {
-      flex-shrink: 0;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 1px solid rgba(0, 229, 255, 0.4);
-      background: rgba(0, 229, 255, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--aurora-1);
-      position: relative;
-      z-index: 1;
+      flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid rgba(0,229,255,0.4); background: rgba(0,229,255,0.08);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Mono', monospace; font-size: 0.75rem;
+      color: var(--aurora-1); position: relative; z-index: 1;
     }
+    .step-content h3 { font-size: var(--text-lg); font-weight: 500; color: var(--metal-light); margin-bottom: var(--space-2); }
+    .step-content p { font-size: var(--text-base); color: var(--metal-mid); line-height: 1.7; max-width: 55ch; }
 
-    .step-content h3 {
-      font-size: var(--text-lg);
-      font-weight: 500;
-      color: var(--metal-light);
-      margin-bottom: var(--space-2);
-    }
-
-    .step-content p {
-      font-size: var(--text-base);
-      color: var(--metal-mid);
-      line-height: 1.7;
-      max-width: 55ch;
-    }
-
-    /* ─── CTA / GitHub Section ─── */
+    /* CTA */
     #cta-section {
-      position: relative;
-      z-index: 2;
-      padding: var(--space-24) var(--space-8);
-      text-align: center;
-      overflow: hidden;
+      position: relative; z-index: 2; padding: var(--space-24) var(--space-8);
+      text-align: center; overflow: hidden;
     }
-
     .cta-inner {
-      position: relative;
-      max-width: 720px;
-      margin: 0 auto;
+      position: relative; max-width: 720px; margin: 0 auto;
       padding: var(--space-16) var(--space-12);
-      border: 1px solid rgba(0,229,255,0.15);
-      border-radius: 1.5rem;
+      border: 1px solid rgba(0,229,255,0.15); border-radius: 1.5rem;
       background: linear-gradient(135deg, rgba(0,229,255,0.04) 0%, rgba(124,58,237,0.06) 100%);
       backdrop-filter: blur(16px);
     }
-
     .cta-inner::before {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      border-radius: inherit;
+      content: ''; position: absolute; inset: -1px; border-radius: inherit;
       background: linear-gradient(135deg, rgba(0,229,255,0.3), rgba(124,58,237,0.2), transparent, rgba(0,229,255,0.1));
-      z-index: -1;
-      opacity: 0.5;
+      z-index: -1; opacity: 0.5;
     }
-
-    .cta-title {
-      font-size: var(--text-2xl);
-      font-weight: 300;
-      color: var(--metal-light);
-      margin-bottom: var(--space-4);
-      line-height: 1.2;
-    }
-
+    .cta-title { font-size: var(--text-2xl); font-weight: 300; color: var(--metal-light); margin-bottom: var(--space-4); line-height: 1.2; }
     .cta-title strong {
       font-weight: 700;
       background: linear-gradient(135deg, #00e5ff, #7c3aed);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-
-    .cta-sub {
-      font-size: var(--text-base);
-      color: var(--metal-mid);
-      margin-bottom: var(--space-8);
-      max-width: 50ch;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
+    .cta-sub { font-size: var(--text-base); color: var(--metal-mid); margin-bottom: var(--space-8); max-width: 50ch; margin-left: auto; margin-right: auto; }
     .btn-github {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
-      padding: 0.875rem 2rem;
-      border-radius: var(--radius-md);
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: 0.875rem 2rem; border-radius: var(--radius-md);
       background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(124,58,237,0.15));
-      border: 1px solid rgba(0,229,255,0.4);
-      color: var(--metal-light);
-      text-decoration: none;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.875rem;
-      letter-spacing: 0.05em;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
+      border: 1px solid rgba(0,229,255,0.4); color: var(--metal-light);
+      text-decoration: none; font-family: 'Space Mono', monospace; font-size: 0.875rem;
+      letter-spacing: 0.05em; transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+      position: relative; overflow: hidden;
     }
-
     .btn-github::before {
-      content: '';
-      position: absolute;
-      inset: 0;
+      content: ''; position: absolute; inset: 0;
       background: linear-gradient(135deg, rgba(0,229,255,0.2), rgba(124,58,237,0.2));
-      opacity: 0;
-      transition: opacity 0.25s;
+      opacity: 0; transition: opacity 0.25s;
     }
-
     .btn-github:hover::before { opacity: 1; }
-
     .btn-github:hover {
-      border-color: rgba(0, 229, 255, 0.7);
-      box-shadow: 0 0 30px rgba(0, 229, 255, 0.2), 0 0 60px rgba(124,58,237,0.1);
+      border-color: rgba(0,229,255,0.7);
+      box-shadow: 0 0 30px rgba(0,229,255,0.2), 0 0 60px rgba(124,58,237,0.1);
       transform: translateY(-2px);
     }
+    .btn-github svg, .btn-github span { position: relative; z-index: 1; }
 
-    .btn-github svg { position: relative; z-index: 1; }
-    .btn-github span { position: relative; z-index: 1; }
-
-    /* ─── Footer ─── */
+    /* Footer */
     #site-footer {
-      position: relative;
-      z-index: 2;
-      padding: var(--space-12) var(--space-8);
+      position: relative; z-index: 2; padding: var(--space-12) var(--space-8);
       border-top: 1px solid rgba(255,255,255,0.06);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: var(--space-4);
-      opacity: 0;
-      clip-path: inset(100% 0 0 0);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: var(--space-4); opacity: 0; clip-path: inset(100% 0 0 0);
     }
-
-    .footer-brand {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
+    .footer-brand { display: flex; align-items: center; gap: var(--space-2); }
     .footer-brand .brand-v {
-      font-family: 'Space Mono', monospace;
-      font-size: 1.5rem;
-      font-weight: 700;
+      font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700;
       background: linear-gradient(135deg, #e8ecf2, #00e5ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-
-    .footer-brand .brand-sub {
-      font-size: 0.75rem;
-      color: var(--metal-mid);
-      letter-spacing: 0.1em;
-    }
-
-    .footer-links {
-      display: flex;
-      align-items: center;
-      gap: var(--space-6);
-    }
-
-    .footer-links a {
-      color: var(--metal-mid);
-      text-decoration: none;
-      font-size: 0.875rem;
-      transition: color 0.2s;
-    }
-
+    .footer-brand .brand-sub { font-size: 0.75rem; color: var(--metal-mid); letter-spacing: 0.1em; }
+    .footer-links { display: flex; align-items: center; gap: var(--space-6); }
+    .footer-links a { color: var(--metal-mid); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
     .footer-links a:hover { color: var(--aurora-1); }
+    .footer-copy { font-size: 0.75rem; color: rgba(160,174,192,0.4); letter-spacing: 0.05em; }
 
-    .footer-copy {
-      font-size: 0.75rem;
-      color: rgba(160, 174, 192, 0.4);
-      letter-spacing: 0.05em;
-    }
-
-    /* ─── Metallic shimmer utility ─── */
+    /* Shimmer */
     .metal-text {
       background: linear-gradient(135deg, #c8cdd5 0%, #ffffff 30%, #a0aec0 55%, #e8ecf2 75%, #8892a4 100%);
-      background-size: 200% 100%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: metalShimmer 4s linear infinite;
+      background-size: 200% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; animation: metalShimmer 4s linear infinite;
     }
-
     @keyframes metalShimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+      0% { background-position: 200% 0; } 100% { background-position: -200% 0; }
+    }
+    .container { max-width: 960px; margin: 0 auto; }
+
+    /* Noise */
+    body::after {
+      content: ''; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
     }
 
-    /* ─── Container ─── */
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-    }
-
-    /* ─── Responsive ─── */
+    /* Responsive */
     @media (max-width: 768px) {
       #site-header { padding: var(--space-4); }
       #header-nav a:not(.header-cta) { display: none; }
@@ -663,50 +386,39 @@
       .footer-links { flex-wrap: wrap; justify-content: center; }
       #features, #stats, #how-it-works, #cta-section { padding: var(--space-12) var(--space-4); }
       #v-svg { width: clamp(280px, 88vw, 640px) !important; }
+      .lang-btn span.lang-label { display: none; }
     }
-
     @media (max-width: 480px) {
       .feature-item { padding: var(--space-8) 0; }
       .step-content p { max-width: 100%; }
       #hero-tagline h1 { font-size: clamp(1rem, 4vw, 1.5rem); white-space: normal; }
       #v-svg { width: clamp(260px, 92vw, 480px) !important; }
     }
-
-    /* ─── Noise texture overlay ─── */
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      pointer-events: none;
-      opacity: 0.025;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-    }
   </style>
 </head>
 <body>
-  <div id="app">
-    <!-- Aurora Canvas Background -->
-    <canvas id="aurora-canvas"></canvas>
+<div id="app">
+  <canvas id="aurora-canvas"></canvas>
 
-    <!-- ─── Fixed Header (slides in on scroll) ─── -->
-    <header id="site-header" :class="{ visible: headerVisible }">
-      <a href="#" id="header-logo" @click.prevent="scrollToTop">
-        <svg :class="{ show: headerVisible }" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="vtell logo">
-          <defs>
-            <linearGradient id="headerVGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#e8ecf2"/>
-              <stop offset="40%" stop-color="#00e5ff"/>
-              <stop offset="100%" stop-color="#7c3aed"/>
-            </linearGradient>
-          </defs>
-          <path d="M5 8 L20 32 L35 8" stroke="url(#headerVGrad)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="logo-text">vtell</span>
-      </a>
+  <!-- Header -->
+  <header id="site-header" :class="{ visible: headerVisible }">
+    <a href="#" id="header-logo" @click.prevent="scrollToTop">
+      <svg :class="{ show: headerVisible }" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="vtell logo">
+        <defs>
+          <linearGradient id="headerVGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#e8ecf2"/>
+            <stop offset="40%" stop-color="#00e5ff"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+          </linearGradient>
+        </defs>
+        <path d="M5 8 L20 32 L35 8" stroke="url(#headerVGrad)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="logo-text">vtell</span>
+    </a>
+    <div id="header-right">
       <nav id="header-nav" aria-label="Main navigation">
-        <a href="#features">Features</a>
-        <a href="#how-it-works">How It Works</a>
+        <a href="#features">{{ t('nav_features') }}</a>
+        <a href="#how-it-works">{{ t('nav_how') }}</a>
         <a href="https://github.com/putcn/vtell" target="_blank" rel="noopener noreferrer" class="header-cta">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -714,457 +426,459 @@
           GitHub
         </a>
       </nav>
-    </header>
-
-    <!-- ─── Hero Section ─── -->
-    <section id="hero" aria-label="Hero">
-      <video id="hero-video" autoplay muted loop playsinline poster="" aria-hidden="true">
-      </video>
-      <div id="hero-video-fallback" aria-hidden="true"></div>
-
-      <!-- The Big V -->
-      <div id="v-mask-container">
-        <svg id="v-svg" viewBox="0 0 560 500" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" overflow="visible">
-          <defs>
-            <linearGradient id="vMetalGrad" gradientUnits="userSpaceOnUse"
-                            x1="80" y1="20" x2="480" y2="500">
-              <stop offset="0%"   stop-color="#6b7280"/>
-              <stop offset="12%"  stop-color="#d1d5db"/>
-              <stop offset="25%"  stop-color="#f9fafb"/>
-              <stop offset="38%"  stop-color="#9ca3af"/>
-              <stop offset="50%"  stop-color="#e5e7eb"/>
-              <stop offset="62%"  stop-color="#ffffff"/>
-              <stop offset="75%"  stop-color="#d1d5db"/>
-              <stop offset="88%"  stop-color="#9ca3af"/>
-              <stop offset="100%" stop-color="#6b7280"/>
-            </linearGradient>
-
-            <linearGradient id="vShimmerGrad" gradientUnits="userSpaceOnUse"
-                            x1="0" y1="0" x2="560" y2="0">
-              <stop offset="0%"   stop-color="rgba(255,255,255,0)"/>
-              <stop offset="40%"  stop-color="rgba(255,255,255,0)"/>
-              <stop offset="50%"  stop-color="rgba(255,255,255,0.55)"/>
-              <stop offset="60%"  stop-color="rgba(255,255,255,0)"/>
-              <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-              <animateTransform attributeName="gradientTransform"
-                type="translate" from="-560 0" to="560 0"
-                dur="3.5s" repeatCount="indefinite"/>
-            </linearGradient>
-
-            <linearGradient id="vAuroraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%"   stop-color="#00e5ff" stop-opacity="0.45"/>
-              <stop offset="50%"  stop-color="#7c3aed" stop-opacity="0.25"/>
-              <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.35"/>
-            </linearGradient>
-
-            <clipPath id="vClip">
-              <text font-family="'Space Grotesk','Arial Black',sans-serif"
-                    font-size="480" font-weight="700"
-                    x="280" y="400"
-                    text-anchor="middle">V</text>
-            </clipPath>
-
-            <filter id="vMetalFilter" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="alphaBlur"/>
-              <feSpecularLighting in="alphaBlur" surfaceScale="7" specularConstant="1.4"
-                                  specularExponent="30" result="specular1" lighting-color="#ffffff">
-                <fePointLight x="100" y="-80" z="220"/>
-              </feSpecularLighting>
-              <feComposite in="specular1" in2="SourceAlpha" operator="in" result="spec1Clipped"/>
-              <feSpecularLighting in="alphaBlur" surfaceScale="5" specularConstant="0.6"
-                                  specularExponent="15" result="specular2" lighting-color="#00e5ff">
-                <fePointLight x="500" y="600" z="180"/>
-              </feSpecularLighting>
-              <feComposite in="specular2" in2="SourceAlpha" operator="in" result="spec2Clipped"/>
-              <feMerge>
-                <feMergeNode in="SourceGraphic"/>
-                <feMergeNode in="spec1Clipped"/>
-                <feMergeNode in="spec2Clipped"/>
-              </feMerge>
-            </filter>
-
-            <filter id="vGlowFilter" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="0" stdDeviation="28" flood-color="rgba(0,229,255,0.35)"/>
-              <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="rgba(0,0,0,0.75)"/>
-            </filter>
-          </defs>
-
-          <!-- Glow halo -->
-          <text font-family="'Space Grotesk','Arial Black',sans-serif"
-                font-size="480" font-weight="700"
-                x="280" y="400"
-                text-anchor="middle"
-                fill="rgba(0,229,255,0.08)"
-                filter="url(#vGlowFilter)">V</text>
-
-          <!-- Main V — metallic gradient -->
-          <text font-family="'Space Grotesk','Arial Black',sans-serif"
-                font-size="480" font-weight="700"
-                x="280" y="400"
-                text-anchor="middle"
-                fill="url(#vMetalGrad)"
-                filter="url(#vMetalFilter)">V</text>
-
-          <!-- Aurora tint overlay -->
-          <text font-family="'Space Grotesk','Arial Black',sans-serif"
-                font-size="480" font-weight="700"
-                x="280" y="400"
-                text-anchor="middle"
-                fill="url(#vAuroraGrad)"
-                opacity="0.28"
-                style="mix-blend-mode:screen;">V</text>
-
-          <!-- Shimmer sweep -->
-          <rect x="0" y="0" width="560" height="500"
-                fill="url(#vShimmerGrad)"
-                clip-path="url(#vClip)"/>
-        </svg>
-      </div>
-
-      <!-- Hero tagline -->
-      <div id="hero-tagline">
-        <h1 class="metal-text">Video Story Teller</h1>
-        <p>From a simple idea to a full video series — on your own hardware</p>
-      </div>
-
-      <!-- Scroll hint -->
-      <div class="scroll-hint" aria-hidden="true">
-        <span>Scroll</span>
-        <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
-          <path d="M8 2 L8 18 M3 13 L8 18 L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-    </section>
-
-    <!-- ─── Features Section ─── -->
-    <section id="features" aria-labelledby="features-heading">
-      <div class="container">
-        <p class="section-label">Core Capabilities</p>
-        <h2 id="features-heading" class="section-title">
-          Everything you need to tell<br><strong>any story</strong>
-        </h2>
-
-        <div class="feature-item" v-for="(feature, index) in features" :key="index" :data-index="index">
-          <div class="feature-text">
-            <p class="feature-number">{{ String(index + 1).padStart(2, '0') }}</p>
-            <h3 class="feature-name">{{ feature.title }}</h3>
-            <p class="feature-desc">{{ feature.desc }}</p>
-          </div>
-          <div class="feature-visual" :aria-hidden="true">
-            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path :d="feature.icon" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── Stats Bar ─── -->
-    <section id="stats" aria-label="Key metrics">
-      <div class="stats-grid">
-        <div class="stat-item" v-for="(stat, i) in stats" :key="i">
-          <span class="stat-value">{{ stat.value }}</span>
-          <span class="stat-label">{{ stat.label }}</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── How It Works ─── -->
-    <section id="how-it-works" aria-labelledby="how-heading">
-      <p class="section-label">Workflow</p>
-      <h2 id="how-heading" class="section-title">
-        From idea to<br><strong>finished video</strong>
-      </h2>
-      <ol class="steps-list" role="list">
-        <li class="step-item" v-for="(step, i) in steps" :key="i">
-          <div class="step-num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</div>
-          <div class="step-content">
-            <h3>{{ step.title }}</h3>
-            <p>{{ step.desc }}</p>
-          </div>
-        </li>
-      </ol>
-    </section>
-
-    <!-- ─── GitHub CTA ─── -->
-    <section id="cta-section" aria-labelledby="cta-heading">
-      <div class="cta-inner">
-        <h2 id="cta-heading" class="cta-title">
-          Open source.<br><strong>Always free.</strong>
-        </h2>
-        <p class="cta-sub">vtell is built in the open. Star the repo, contribute, or fork it to tell your own story.</p>
-        <a href="https://github.com/putcn/vtell" target="_blank" rel="noopener noreferrer" class="btn-github">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      <!-- Language Switcher -->
+      <div class="lang-switcher" v-click-outside="closeLangMenu">
+        <button class="lang-btn" @click="langMenuOpen = !langMenuOpen" :aria-expanded="langMenuOpen" aria-haspopup="listbox">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
           </svg>
-          <span>github.com/putcn/vtell</span>
-        </a>
+          <span class="lang-label">{{ currentLangLabel }}</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        <div class="lang-dropdown" v-if="langMenuOpen" role="listbox">
+          <button v-for="lang in langs" :key="lang.code"
+            class="lang-option" :class="{ active: locale === lang.code }"
+            @click="setLocale(lang.code)" role="option" :aria-selected="locale === lang.code">
+            <span class="flag">{{ lang.flag }}</span>
+            <span>{{ lang.label }}</span>
+          </button>
+        </div>
       </div>
-    </section>
+    </div>
+  </header>
 
-    <!-- ─── Footer ─── -->
-    <footer id="site-footer" role="contentinfo">
-      <div class="footer-brand">
-        <span class="brand-v">vtell</span>
-        <span class="brand-sub">video story teller</span>
+  <!-- Hero -->
+  <section id="hero" aria-label="Hero">
+    <video id="hero-video" autoplay muted loop playsinline poster="" aria-hidden="true"></video>
+    <div id="hero-video-fallback" aria-hidden="true"></div>
+    <div id="v-mask-container">
+      <svg id="v-svg" viewBox="0 0 560 500" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" overflow="visible">
+        <defs>
+          <linearGradient id="vMetalGrad" gradientUnits="userSpaceOnUse" x1="80" y1="20" x2="480" y2="500">
+            <stop offset="0%" stop-color="#6b7280"/><stop offset="12%" stop-color="#d1d5db"/>
+            <stop offset="25%" stop-color="#f9fafb"/><stop offset="38%" stop-color="#9ca3af"/>
+            <stop offset="50%" stop-color="#e5e7eb"/><stop offset="62%" stop-color="#ffffff"/>
+            <stop offset="75%" stop-color="#d1d5db"/><stop offset="88%" stop-color="#9ca3af"/>
+            <stop offset="100%" stop-color="#6b7280"/>
+          </linearGradient>
+          <linearGradient id="vShimmerGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="560" y2="0">
+            <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+            <stop offset="40%" stop-color="rgba(255,255,255,0)"/>
+            <stop offset="50%" stop-color="rgba(255,255,255,0.55)"/>
+            <stop offset="60%" stop-color="rgba(255,255,255,0)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+            <animateTransform attributeName="gradientTransform" type="translate" from="-560 0" to="560 0" dur="3.5s" repeatCount="indefinite"/>
+          </linearGradient>
+          <linearGradient id="vAuroraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.45"/>
+            <stop offset="50%" stop-color="#7c3aed" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.35"/>
+          </linearGradient>
+          <clipPath id="vClip">
+            <text font-family="'Space Grotesk','Arial Black',sans-serif" font-size="480" font-weight="700" x="280" y="400" text-anchor="middle">V</text>
+          </clipPath>
+          <filter id="vMetalFilter" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="alphaBlur"/>
+            <feSpecularLighting in="alphaBlur" surfaceScale="7" specularConstant="1.4" specularExponent="30" result="specular1" lighting-color="#ffffff"><fePointLight x="100" y="-80" z="220"/></feSpecularLighting>
+            <feComposite in="specular1" in2="SourceAlpha" operator="in" result="spec1Clipped"/>
+            <feSpecularLighting in="alphaBlur" surfaceScale="5" specularConstant="0.6" specularExponent="15" result="specular2" lighting-color="#00e5ff"><fePointLight x="500" y="600" z="180"/></feSpecularLighting>
+            <feComposite in="specular2" in2="SourceAlpha" operator="in" result="spec2Clipped"/>
+            <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="spec1Clipped"/><feMergeNode in="spec2Clipped"/></feMerge>
+          </filter>
+          <filter id="vGlowFilter" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="0" stdDeviation="28" flood-color="rgba(0,229,255,0.35)"/>
+            <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="rgba(0,0,0,0.75)"/>
+          </filter>
+        </defs>
+        <text font-family="'Space Grotesk','Arial Black',sans-serif" font-size="480" font-weight="700" x="280" y="400" text-anchor="middle" fill="rgba(0,229,255,0.08)" filter="url(#vGlowFilter)">V</text>
+        <text font-family="'Space Grotesk','Arial Black',sans-serif" font-size="480" font-weight="700" x="280" y="400" text-anchor="middle" fill="url(#vMetalGrad)" filter="url(#vMetalFilter)">V</text>
+        <text font-family="'Space Grotesk','Arial Black',sans-serif" font-size="480" font-weight="700" x="280" y="400" text-anchor="middle" fill="url(#vAuroraGrad)" opacity="0.28" style="mix-blend-mode:screen;">V</text>
+        <rect x="0" y="0" width="560" height="500" fill="url(#vShimmerGrad)" clip-path="url(#vClip)"/>
+      </svg>
+    </div>
+    <div id="hero-tagline">
+      <h1 class="metal-text">{{ t('hero_title') }}</h1>
+      <p>{{ t('hero_sub') }}</p>
+    </div>
+    <div class="scroll-hint" aria-hidden="true">
+      <span>{{ t('scroll') }}</span>
+      <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+        <path d="M8 2 L8 18 M3 13 L8 18 L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" aria-labelledby="features-heading">
+    <div class="container">
+      <p class="section-label">{{ t('features_label') }}</p>
+      <h2 id="features-heading" class="section-title" v-html="t('features_title')"></h2>
+      <div class="feature-item" v-for="(feature, index) in currentFeatures" :key="index">
+        <div class="feature-text">
+          <p class="feature-number">{{ String(index + 1).padStart(2, '0') }}</p>
+          <h3 class="feature-name">{{ feature.title }}</h3>
+          <p class="feature-desc">{{ feature.desc }}</p>
+        </div>
+        <div class="feature-visual" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path :d="feature.icon" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
       </div>
-      <nav class="footer-links" aria-label="Footer navigation">
-        <a href="https://github.com/putcn/vtell" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <a href="https://github.com/putcn/vtell/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">License</a>
-        <a href="https://github.com/putcn/vtell/issues" target="_blank" rel="noopener noreferrer">Issues</a>
-      </nav>
-      <p class="footer-copy">vtell.ai — open source, open skies</p>
-    </footer>
-  </div><!-- #app -->
+    </div>
+  </section>
 
-  <script>
-  const { createApp } = Vue;
+  <!-- Stats -->
+  <section id="stats" aria-label="Key metrics">
+    <div class="stats-grid">
+      <div class="stat-item" v-for="(stat, i) in currentStats" :key="i">
+        <span class="stat-value">{{ stat.value }}</span>
+        <span class="stat-label">{{ stat.label }}</span>
+      </div>
+    </div>
+  </section>
 
-  createApp({
-    data() {
-      return {
-        headerVisible: false,
-        features: [
-          {
-            title: 'Idea-to-Video in Minutes',
-            desc: 'Describe your story in a few sentences. vtell decomposes your idea into scenes, writes a script, generates visuals, narration, and background music — all automatically.',
-            icon: 'M8 2h8l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm8 0v6h6M12 18v-6M9 15l3 3 3-3'
-          },
-          {
-            title: 'Consumer Hardware, Pro Output',
-            desc: 'Runs locally on a single gaming GPU like an RTX 4090 or 3090. No cloud subscriptions, no API costs. Your hardware, your creativity.',
-            icon: 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18'
-          },
-          {
-            title: 'Open-Source Model Stack',
-            desc: 'Built on top of cutting-edge open models — LTX Video, Wan, and best-in-class TTS and LLM engines. Swap any component as the ecosystem evolves.',
-            icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
-          },
-          {
-            title: 'Long-Form & Series Support',
-            desc: 'Generate multi-episode series with consistent characters, art style, and narrative continuity. Build a complete show, not just a single clip.',
-            icon: 'M15 10l-8 4.5V5.5L15 10zM20 6H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z'
-          },
-          {
-            title: 'Fully Customizable Pipeline',
-            desc: 'Integrate with ComfyUI workflows, bring your own LoRA models, adjust scene pacing, voice tone, and visual style with granular controls.',
-            icon: 'M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z'
-          },
-          {
-            title: 'Zero Data Sent to Cloud',
-            desc: 'Everything runs on your local machine. Your ideas, your scripts, your footage — fully private. No data harvesting, no terms-of-service gotchas.',
-            icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'
+  <!-- How It Works -->
+  <section id="how-it-works" aria-labelledby="how-heading">
+    <p class="section-label">{{ t('workflow_label') }}</p>
+    <h2 id="how-heading" class="section-title" v-html="t('workflow_title')"></h2>
+    <ol class="steps-list" role="list">
+      <li class="step-item" v-for="(step, i) in currentSteps" :key="i">
+        <div class="step-num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</div>
+        <div class="step-content"><h3>{{ step.title }}</h3><p>{{ step.desc }}</p></div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- CTA -->
+  <section id="cta-section" aria-labelledby="cta-heading">
+    <div class="cta-inner">
+      <h2 id="cta-heading" class="cta-title" v-html="t('cta_title')"></h2>
+      <p class="cta-sub">{{ t('cta_sub') }}</p>
+      <a href="https://github.com/putcn/vtell" target="_blank" rel="noopener noreferrer" class="btn-github">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+        </svg>
+        <span>github.com/putcn/vtell</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="site-footer" role="contentinfo">
+    <div class="footer-brand">
+      <span class="brand-v">vtell</span>
+      <span class="brand-sub">{{ t('footer_brand') }}</span>
+    </div>
+    <nav class="footer-links" aria-label="Footer navigation">
+      <a href="https://github.com/putcn/vtell" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://github.com/putcn/vtell/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">{{ t('footer_license') }}</a>
+      <a href="https://github.com/putcn/vtell/issues" target="_blank" rel="noopener noreferrer">{{ t('footer_issues') }}</a>
+    </nav>
+    <p class="footer-copy">vtell.ai — {{ t('footer_copy') }}</p>
+  </footer>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+// ─── i18n translations ───
+const TRANSLATIONS = {
+  en: {
+    nav_features: 'Features', nav_how: 'How It Works',
+    hero_title: 'Video Story Teller',
+    hero_sub: 'From a simple idea to a full video series \u2014 on your own hardware',
+    scroll: 'Scroll',
+    features_label: 'Core Capabilities',
+    features_title: 'Everything you need to tell<br><strong>any story</strong>',
+    workflow_label: 'Workflow',
+    workflow_title: 'From idea to<br><strong>finished video</strong>',
+    cta_title: 'Open source.<br><strong>Always free.</strong>',
+    cta_sub: 'vtell is built in the open. Star the repo, contribute, or fork it to tell your own story.',
+    footer_brand: 'video story teller',
+    footer_license: 'License', footer_issues: 'Issues',
+    footer_copy: 'open source, open skies',
+    features: [
+      { title: 'Idea-to-Video in Minutes', desc: 'Describe your story in a few sentences. vtell decomposes your idea into scenes, writes a script, generates visuals, narration, and background music \u2014 all automatically.', icon: 'M8 2h8l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm8 0v6h6M12 18v-6M9 15l3 3 3-3' },
+      { title: 'Consumer Hardware, Pro Output', desc: 'Runs locally on a single gaming GPU like an RTX 4090 or 3090. No cloud subscriptions, no API costs. Your hardware, your creativity.', icon: 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18' },
+      { title: 'Open-Source Model Stack', desc: 'Built on top of cutting-edge open models \u2014 LTX Video, Wan, and best-in-class TTS and LLM engines. Swap any component as the ecosystem evolves.', icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' },
+      { title: 'Long-Form & Series Support', desc: 'Generate multi-episode series with consistent characters, art style, and narrative continuity. Build a complete show, not just a single clip.', icon: 'M15 10l-8 4.5V5.5L15 10zM20 6H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z' },
+      { title: 'Fully Customizable Pipeline', desc: 'Integrate with ComfyUI workflows, bring your own LoRA models, adjust scene pacing, voice tone, and visual style with granular controls.', icon: 'M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z' },
+      { title: 'Zero Data Sent to Cloud', desc: 'Everything runs on your local machine. Your ideas, your scripts, your footage \u2014 fully private. No data harvesting, no terms-of-service gotchas.', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' }
+    ],
+    stats: [
+      { value: '100%', label: 'Local Inference' },
+      { value: '1 GPU', label: 'Consumer Hardware' },
+      { value: '\u221e', label: 'Story Length' }
+    ],
+    steps: [
+      { title: 'Write Your Idea', desc: 'Start with 1\u20135 sentences describing your story. A documentary, a drama, a tutorial, a short film \u2014 any format works.' },
+      { title: 'vtell Writes the Script', desc: 'The LLM agent breaks your idea into scenes, writes scene descriptions, generates dialogue, and creates a structured storyboard.' },
+      { title: 'Visual Generation', desc: 'Each scene is rendered using open-source video diffusion models. Keyframes are generated and interpolated into smooth video clips.' },
+      { title: 'Voice & Audio', desc: 'Narration is synthesized with a TTS model matching the tone of the scene. Background music is composed or selected to fit the mood.' },
+      { title: 'Assembly & Export', desc: 'All clips, audio, and transitions are composited into a final rendered video file ready to share or continue as a series.' }
+    ]
+  },
+  zh: {
+    nav_features: '\u529f\u80fd', nav_how: '\u5de5\u4f5c\u539f\u7406',
+    hero_title: '\u89c6\u9891\u6545\u4e8b\u8bb2\u8ff0\u8005',
+    hero_sub: '\u4e00\u4e2a\u7b80\u5355\u60f3\u6cd5\uff0c\u5c31\u80fd\u5728\u81ea\u5df1\u7684\u786c\u4ef6\u4e0a\u751f\u6210\u5b8c\u6574\u7684\u7cfb\u5217\u89c6\u9891',
+    scroll: '\u6eda\u52a8',
+    features_label: '\u6838\u5fc3\u80fd\u529b',
+    features_title: '\u8bb2\u597d<br><strong>\u4efb\u4f55\u6545\u4e8b</strong>\u6240\u9700\u7684\u4e00\u5207',
+    workflow_label: '\u5de5\u4f5c\u6d41\u7a0b',
+    workflow_title: '\u4ece\u60f3\u6cd5\u5230<br><strong>\u5b8c\u6210\u7684\u89c6\u9891</strong>',
+    cta_title: '\u5f00\u6e90\u514d\u8d39\u3002<br><strong>\u6c38\u8fdc\u514d\u8d39\u3002</strong>',
+    cta_sub: 'vtell \u5b8c\u5168\u5f00\u6e90\u3002Star \u4ed3\u5e93\u3001\u53c2\u4e0e\u8d21\u732e\uff0c\u6216 fork \u5b83\u6765\u8bb2\u8ff0\u5c5e\u4e8e\u4f60\u7684\u6545\u4e8b\u3002',
+    footer_brand: '\u89c6\u9891\u6545\u4e8b\u8bb2\u8ff0\u8005',
+    footer_license: '\u8bb8\u53ef\u8bc1', footer_issues: '\u95ee\u9898\u53cd\u9988',
+    footer_copy: '\u5f00\u6e90\uff0c\u5f00\u653e',
+    features: [
+      { title: '\u5206\u949f\u5185\u60f3\u6cd5\u53d8\u89c6\u9891', desc: '\u7528\u51e0\u53e5\u8bdd\u63cf\u8ff0\u4f60\u7684\u6545\u4e8b\u3002vtell \u81ea\u52a8\u5206\u89e3\u573a\u666f\u3001\u7f16\u5199\u5267\u672c\u3001\u751f\u6210\u753b\u9762\u3001\u65c1\u767d\u548c\u80cc\u666f\u97f3\u4e50\u3002', icon: 'M8 2h8l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm8 0v6h6M12 18v-6M9 15l3 3 3-3' },
+      { title: '\u6d88\u8d39\u7ea7\u786c\u4ef6\uff0c\u4e13\u4e1a\u7ea7\u8f93\u51fa', desc: '\u5728\u5355\u5f20\u6e38\u620f GPU\uff08\u5982 RTX 4090 / 3090\uff09\u4e0a\u672c\u5730\u8fd0\u884c\u3002\u65e0\u9700\u4e91\u8ba2\u9605\uff0c\u65e0\u9700 API \u8d39\u7528\u3002', icon: 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18' },
+      { title: '\u5f00\u6e90\u6a21\u578b\u5806\u6808', desc: '\u57fa\u4e8e LTX Video\u3001Wan \u7b49\u9876\u5c16\u5f00\u6e90\u6a21\u578b\uff0c\u914d\u5408\u4e00\u6d41 TTS \u548c LLM \u5f15\u64ce\u3002\u968f\u65f6\u66ff\u6362\u4efb\u610f\u7ec4\u4ef6\u3002', icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' },
+      { title: '\u957f\u7247\u4e0e\u7cfb\u5217\u89c6\u9891', desc: '\u751f\u6210\u5177\u6709\u4e00\u81f4\u89d2\u8272\u3001\u753b\u98ce\u548c\u8fde\u8d2f\u5267\u60c5\u7684\u591a\u96c6\u7cfb\u5217\u3002\u4e0d\u4ec5\u4ec5\u662f\u5355\u4e2a\u5c0f\u89c6\u9891\u3002', icon: 'M15 10l-8 4.5V5.5L15 10zM20 6H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z' },
+      { title: '\u5b8c\u5168\u81ea\u5b9a\u4e49\u6d41\u6c34\u7ebf', desc: '\u96c6\u6210 ComfyUI \u5de5\u4f5c\u6d41\u3001\u4f7f\u7528\u81ea\u5b9a\u4e49 LoRA \u6a21\u578b\uff0c\u7ec6\u7c92\u5ea6\u8c03\u8282\u573a\u666f\u8282\u594f\u3001\u58f0\u97f3\u98ce\u683c\u548c\u753b\u9762\u98ce\u683c\u3002', icon: 'M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z' },
+      { title: '\u6570\u636e\u5b8c\u5168\u672c\u5730', desc: '\u4e00\u qiè\u5728\u4f60\u7684\u672c\u5730\u673a\u5668\u4e0a\u8fd0\u884c\u3002\u60f3\u6cd5\u3001\u5267\u672c\u3001\u7d20\u6750\u5b8c\u5168\u79c1\u5bc6\u3002\u65e0\u6570\u636e\u6536\u96c6\uff0c\u65e0\u9690\u6027\u670d\u52a1\u6761\u6b3e\u3002', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' }
+    ],
+    stats: [
+      { value: '100%', label: '\u672c\u5730\u63a8\u7406' },
+      { value: '1 GPU', label: '\u6d88\u8d39\u7ea7\u786c\u4ef6' },
+      { value: '\u221e', label: '\u89c6\u9891\u957f\u5ea6\u4e0d\u9650' }
+    ],
+    steps: [
+      { title: '\u5199\u4e0b\u4f60\u7684\u60f3\u6cd5', desc: '\u7528 1\uff5e5 \u53e5\u8bdd\u63cf\u8ff0\u4f60\u7684\u6545\u4e8b\u3002\u7eaa\u5f55\u7247\u3001\u5267\u60c5\u3001\u6559\u7a0b\u3001\u77ed\u7247\u2014\u2014\u4efb\u610f\u9898\u6750\u90fd\u53ef\u4ee5\u3002' },
+      { title: 'vtell \u81ea\u52a8\u5199\u5267\u672c', desc: 'LLM \u667a\u80fd\u4f53\u5c06\u60f3\u6cd5\u62c6\u5206\u4e3a\u573a\u666f\uff0c\u7f16\u5199\u573a\u666f\u63cf\u8ff0\u3001\u5bf9\u767d\u548c\u5206\u955c\u5934\u811a\u672c\u3002' },
+      { title: '\u89c6\u9891\u753b\u9762\u751f\u6210', desc: '\u5229\u7528\u5f00\u6e90\u89c6\u9891\u6269\u6563\u6a21\u578b\u6e32\u67d3\u6bcf\u4e2a\u573a\u666f\uff0c\u5173\u952e\u5e27\u751f\u6210\u540e\u63d2\u503c\u4e3a\u6d41\u7545\u89c6\u9891\u7247\u6bb5\u3002' },
+      { title: '\u914d\u97f3\u4e0e\u97f3\u6548', desc: 'TTS \u6a21\u578b\u6839\u636e\u573a\u666f\u60c5\u8c03\u5408\u6210\u65c1\u767d\uff0c\u6839\u636e\u6c14\u6c1b\u4e3a\u6bcf\u6bb5\u9009\u53d6\u6216\u521b\u4f5c\u80cc\u666f\u97f3\u4e50\u3002' },
+      { title: '\u5408\u6210\u5bfc\u51fa', desc: '\u6240\u6709\u89c6\u9891\u7247\u6bb5\u3001\u97f3\u9891\u548c\u8f6c\u573a\u5408\u6210\u4e3a\u6700\u7ec8\u89c6\u9891\u6587\u4ef6\uff0c\u53ef\u76f4\u63a5\u5206\u4eab\u6216\u7ee7\u7eed\u5236\u4f5c\u7cfb\u5217\u3002' }
+    ]
+  },
+  es: {
+    nav_features: 'Funciones', nav_how: 'C\u00f3mo Funciona',
+    hero_title: 'Video Story Teller',
+    hero_sub: 'De una idea sencilla a una serie de videos completa \u2014 en tu propio hardware',
+    scroll: 'Desplazar',
+    features_label: 'Capacidades Principales',
+    features_title: 'Todo lo que necesitas para contar<br><strong>cualquier historia</strong>',
+    workflow_label: 'Flujo de Trabajo',
+    workflow_title: 'De la idea al<br><strong>video terminado</strong>',
+    cta_title: 'C\u00f3digo abierto.<br><strong>Siempre gratis.</strong>',
+    cta_sub: 'vtell es de c\u00f3digo abierto. Dale una estrella, contribuye o hazle fork para contar tu propia historia.',
+    footer_brand: 'narrador de historias en video',
+    footer_license: 'Licencia', footer_issues: 'Problemas',
+    footer_copy: 'c\u00f3digo abierto, cielos abiertos',
+    features: [
+      { title: 'De Idea a Video en Minutos', desc: 'Describe tu historia en unas pocas frases. vtell descompone tu idea en escenas, escribe el gui\u00f3n, genera im\u00e1genes, narr\u00f3n y m\u00fasica \u2014 todo autom\u00e1ticamente.', icon: 'M8 2h8l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm8 0v6h6M12 18v-6M9 15l3 3 3-3' },
+      { title: 'Hardware de Consumo, Calidad Profesional', desc: 'Funciona localmente en una sola GPU para juegos como la RTX 4090 o 3090. Sin suscripciones a la nube, sin costes de API.', icon: 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18' },
+      { title: 'Pila de Modelos de C\u00f3digo Abierto', desc: 'Construido sobre modelos abiertos de vanguardia: LTX Video, Wan y los mejores motores TTS y LLM. Cambia cualquier componente seg\u00fan evolucione el ecosistema.', icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' },
+      { title: 'Soporte para Largo Plazo y Series', desc: 'Genera series multi-episodio con personajes, estilo art\u00edstico y continuidad narrativa consistentes. Crea un programa completo, no solo un clip.', icon: 'M15 10l-8 4.5V5.5L15 10zM20 6H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z' },
+      { title: 'Pipeline Totalmente Personalizable', desc: 'Integra flujos de trabajo de ComfyUI, usa tus propios modelos LoRA y ajusta el ritmo de escenas, el tono de voz y el estilo visual.', icon: 'M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z' },
+      { title: 'Cero Datos Enviados a la Nube', desc: 'Todo funciona en tu m\u00e1quina local. Tus ideas, tus guiones, tus materiales \u2014 completamente privados. Sin recopilaci\u00f3n de datos.', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' }
+    ],
+    stats: [
+      { value: '100%', label: 'Inferencia Local' },
+      { value: '1 GPU', label: 'Hardware de Consumo' },
+      { value: '\u221e', label: 'Duraci\u00f3n del Video' }
+    ],
+    steps: [
+      { title: 'Escribe tu Idea', desc: 'Empieza con 1 a 5 frases describiendo tu historia. Un documental, un drama, un tutorial, un cortometraje \u2014 cualquier formato funciona.' },
+      { title: 'vtell Escribe el Gui\u00f3n', desc: 'El agente LLM divide tu idea en escenas, escribe descripciones, genera di\u00e1logos y crea un story\u00adboard estructurado.' },
+      { title: 'Generaci\u00f3n Visual', desc: 'Cada escena se renderiza con modelos de difusi\u00f3n de video de c\u00f3digo abierto. Los fotogramas clave se generan e interpolan en clips de video suaves.' },
+      { title: 'Voz y Audio', desc: 'La narraci\u00f3n se sintetiza con un modelo TTS adecuado al tono de la escena. La m\u00fasica de fondo se compone o selecciona seg\u00fan el ambiente.' },
+      { title: 'Ensamblaje y Exportaci\u00f3n', desc: 'Todos los clips, el audio y las transiciones se componen en un archivo de video final listo para compartir o continuar como serie.' }
+    ]
+  },
+  fr: {
+    nav_features: 'Fonctionnalit\u00e9s', nav_how: 'Comment \u00e7a marche',
+    hero_title: 'Video Story Teller',
+    hero_sub: 'D\u2019une simple id\u00e9e \u00e0 une s\u00e9rie vid\u00e9o compl\u00e8te \u2014 sur votre propre mat\u00e9riel',
+    scroll: 'D\u00e9filer',
+    features_label: 'Capacit\u00e9s Principales',
+    features_title: 'Tout ce qu\u2019il faut pour raconter<br><strong>n\u2019importe quelle histoire</strong>',
+    workflow_label: 'Processus',
+    workflow_title: 'De l\u2019id\u00e9e \u00e0 la<br><strong>vid\u00e9o termin\u00e9e</strong>',
+    cta_title: 'Open source.<br><strong>Toujours gratuit.</strong>',
+    cta_sub: 'vtell est construit en open source. Mettez une \u00e9toile, contribuez ou forkez-le pour raconter votre propre histoire.',
+    footer_brand: 'narrateur d\u2019histoires en vid\u00e9o',
+    footer_license: 'Licence', footer_issues: 'Probl\u00e8mes',
+    footer_copy: 'open source, cieux ouverts',
+    features: [
+      { title: 'Id\u00e9e en Vid\u00e9o en Quelques Minutes', desc: 'D\u00e9crivez votre histoire en quelques phrases. vtell la d\u00e9compose en sc\u00e8nes, r\u00e9dige un script, g\u00e9n\u00e8re les visuels, la narration et la musique \u2014 automatiquement.', icon: 'M8 2h8l6 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm8 0v6h6M12 18v-6M9 15l3 3 3-3' },
+      { title: 'Mat\u00e9riel Grand Public, R\u00e9sultat Professionnel', desc: 'Fonctionne localement sur une seule carte graphique de jeu comme une RTX 4090 ou 3090. Pas d\u2019abonnement cloud, pas de frais d\u2019API.', icon: 'M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18' },
+      { title: 'Pile de Mod\u00e8les Open Source', desc: 'Bas\u00e9 sur des mod\u00e8les ouverts de pointe \u2014 LTX Video, Wan, et les meilleurs moteurs TTS et LLM. Remplacez n\u2019importe quel composant.', icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' },
+      { title: 'Support Long Format & S\u00e9ries', desc: 'G\u00e9n\u00e9rez des s\u00e9ries multi-\u00e9pisodes avec des personnages coh\u00e9rents, un style artistique et une continuit\u00e9 narrative. Cr\u00e9ez un spectacle complet.', icon: 'M15 10l-8 4.5V5.5L15 10zM20 6H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z' },
+      { title: 'Pipeline Enti\u00e8rement Personnalisable', desc: 'Int\u00e9grez des flux ComfyUI, apportez vos propres mod\u00e8les LoRA, et ajustez le rythme des sc\u00e8nes, le ton vocal et le style visuel.', icon: 'M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z' },
+      { title: 'Z\u00e9ro Donn\u00e9e Envoy\u00e9e dans le Cloud', desc: 'Tout tourne sur votre machine locale. Vos id\u00e9es, scripts et m\u00e9trages \u2014 enti\u00e8rement priv\u00e9s. Aucune collecte de donn\u00e9es.', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' }
+    ],
+    stats: [
+      { value: '100%', label: 'Inf\u00e9rence Locale' },
+      { value: '1 GPU', label: 'Mat\u00e9riel Grand Public' },
+      { value: '\u221e', label: 'Dur\u00e9e de la Vid\u00e9o' }
+    ],
+    steps: [
+      { title: '\u00c9crivez Votre Id\u00e9e', desc: 'Commencez par 1 \u00e0 5 phrases d\u00e9crivant votre histoire. Un documentaire, un drame, un tutoriel, un court-m\u00e9trage \u2014 tout format fonctionne.' },
+      { title: 'vtell R\u00e9dige le Script', desc: 'L\u2019agent LLM d\u00e9coupe votre id\u00e9e en sc\u00e8nes, r\u00e9dige les descriptions, g\u00e9n\u00e8re les dialogues et cr\u00e9e un storyboard structur\u00e9.' },
+      { title: 'G\u00e9n\u00e9ration Visuelle', desc: 'Chaque sc\u00e8ne est rendue avec des mod\u00e8les de diffusion vid\u00e9o open source. Les images cl\u00e9s sont g\u00e9n\u00e9r\u00e9es et interpol\u00e9es en clips fluides.' },
+      { title: 'Voix et Audio', desc: 'La narration est synth\u00e9tis\u00e9e avec un mod\u00e8le TTS adapt\u00e9 au ton de la sc\u00e8ne. La musique de fond est compos\u00e9e ou s\u00e9lectionn\u00e9e selon l\u2019atmosph\u00e8re.' },
+      { title: 'Montage et Export', desc: 'Tous les clips, l\u2019audio et les transitions sont compos\u00e9s en un fichier vid\u00e9o final pr\u00eat \u00e0 partager ou \u00e0 continuer en s\u00e9rie.' }
+    ]
+  }
+};
+
+// ─── Cookie helpers ───
+function getCookie(name) {
+  const m = document.cookie.match('(?:^|; )' + name + '=([^;]*)');
+  return m ? decodeURIComponent(m[1]) : null;
+}
+function setCookie(name, value, days) {
+  const exp = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)};expires=${exp};path=/;SameSite=Lax`;
+}
+
+const LANGS = [
+  { code: 'en', label: 'English',  flag: '\uD83C\uDDFA\uD83C\uDDF8' },
+  { code: 'zh', label: '\u4e2d\u6587',    flag: '\uD83C\uDDE8\uD83C\uDDF3' },
+  { code: 'es', label: 'Espa\u00f1ol',  flag: '\uD83C\uDDEA\uD83C\uDDF8' },
+  { code: 'fr', label: 'Fran\u00e7ais',  flag: '\uD83C\uDDEB\uD83C\uDDF7' },
+];
+
+createApp({
+  data() {
+    const saved = getCookie('vtell_locale');
+    const browserLang = (navigator.language || '').slice(0, 2);
+    const initLocale = (saved && TRANSLATIONS[saved]) ? saved
+      : (TRANSLATIONS[browserLang] ? browserLang : 'en');
+    return {
+      locale: initLocale,
+      langs: LANGS,
+      langMenuOpen: false,
+      headerVisible: false,
+    };
+  },
+  computed: {
+    currentLangLabel() {
+      return this.langs.find(l => l.code === this.locale)?.label || 'EN';
+    },
+    currentFeatures() { return TRANSLATIONS[this.locale].features; },
+    currentStats()    { return TRANSLATIONS[this.locale].stats; },
+    currentSteps()    { return TRANSLATIONS[this.locale].steps; },
+  },
+  methods: {
+    t(key) { return TRANSLATIONS[this.locale][key] || TRANSLATIONS.en[key] || key; },
+    setLocale(code) {
+      this.locale = code;
+      this.langMenuOpen = false;
+      setCookie('vtell_locale', code, 365);
+      document.documentElement.lang = code;
+    },
+    closeLangMenu() { this.langMenuOpen = false; },
+    scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); },
+
+    initAurora() {
+      const canvas = document.getElementById('aurora-canvas');
+      const ctx = canvas.getContext('2d');
+      let width, height, time = 0;
+      const resize = () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; };
+      resize(); window.addEventListener('resize', resize);
+      const auroras = [
+        { color: [0,229,255],   speed: 0.0003,  amp: 0.35, freq: 1.2, phase: 0 },
+        { color: [124,58,237],  speed: 0.0002,  amp: 0.28, freq: 0.8, phase: 2.1 },
+        { color: [16,185,129],  speed: 0.00025, amp: 0.22, freq: 1.5, phase: 4.2 },
+        { color: [6,182,212],   speed: 0.00035, amp: 0.18, freq: 0.6, phase: 1.0 },
+      ];
+      const draw = () => {
+        time++;
+        ctx.clearRect(0, 0, width, height);
+        const bg = ctx.createLinearGradient(0,0,0,height);
+        bg.addColorStop(0,'#04060a'); bg.addColorStop(0.5,'#060810'); bg.addColorStop(1,'#04060a');
+        ctx.fillStyle = bg; ctx.fillRect(0,0,width,height);
+        auroras.forEach(a => {
+          const cy = height * (0.3 + a.amp * Math.sin(time * a.speed + a.phase));
+          const g = ctx.createLinearGradient(0, cy - height*0.3, 0, cy + height*0.3);
+          const [r,gr,b] = a.color;
+          g.addColorStop(0,`rgba(${r},${gr},${b},0)`); g.addColorStop(0.3,`rgba(${r},${gr},${b},0.03)`);
+          g.addColorStop(0.5,`rgba(${r},${gr},${b},0.07)`); g.addColorStop(0.7,`rgba(${r},${gr},${b},0.03)`);
+          g.addColorStop(1,`rgba(${r},${gr},${b},0)`);
+          ctx.beginPath(); ctx.moveTo(0, cy);
+          for (let x = 0; x <= width; x += 8) {
+            ctx.lineTo(x, cy + Math.sin(x*a.freq*0.004 + time*a.speed*3 + a.phase)*height*0.06
+                            + Math.sin(x*a.freq*0.009 + time*a.speed*2.1)*height*0.03);
           }
-        ],
-        stats: [
-          { value: '100%', label: 'Local Inference' },
-          { value: '1 GPU', label: 'Consumer Hardware' },
-          { value: '\u221e', label: 'Story Length' }
-        ],
-        steps: [
-          {
-            title: 'Write Your Idea',
-            desc: 'Start with 1\u20135 sentences describing your story. A documentary, a drama, a tutorial, a short film \u2014 any format works.'
-          },
-          {
-            title: 'vtell Writes the Script',
-            desc: 'The LLM agent breaks your idea into scenes, writes scene descriptions, generates dialogue, and creates a structured storyboard.'
-          },
-          {
-            title: 'Visual Generation',
-            desc: 'Each scene is rendered using open-source video diffusion models. Keyframes are generated and interpolated into smooth video clips.'
-          },
-          {
-            title: 'Voice & Audio',
-            desc: 'Narration is synthesized with a TTS model matching the tone of the scene. Background music is composed or selected to fit the mood.'
-          },
-          {
-            title: 'Assembly & Export',
-            desc: 'All clips, audio, and transitions are composited into a final rendered video file ready to share or continue as a series.'
+          ctx.lineTo(width,height); ctx.lineTo(0,height); ctx.closePath();
+          ctx.fillStyle = g; ctx.fill();
+        });
+        if (time % 3 === 0) {
+          ctx.save();
+          for (let i=0;i<3;i++) {
+            ctx.beginPath(); ctx.arc(Math.random()*width, Math.random()*height*0.5, Math.random()*1.2, 0, Math.PI*2);
+            ctx.fillStyle = `rgba(255,255,255,${Math.random()*0.4+0.1})`; ctx.fill();
           }
-        ]
+          ctx.restore();
+        }
+        requestAnimationFrame(draw);
       };
+      draw();
     },
-    mounted() {
-      this.initAurora();
-      this.initScrollAnimations();
-      this.initHeroEntrance();
+
+    initHeroEntrance() {
+      const vSvg = document.getElementById('v-svg');
+      const tagline = document.getElementById('hero-tagline');
+      gsap.set(vSvg, { scale: 0.7, opacity: 0, transformOrigin: '50% 50%' });
+      gsap.set(tagline, { opacity: 0, y: 20 });
+      gsap.timeline({ delay: 0.3 })
+        .to(vSvg, { scale: 1, opacity: 1, duration: 1.4, ease: 'power3.out' })
+        .to(tagline, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }, '-=0.4');
     },
-    methods: {
-      scrollToTop() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      },
 
-      initAurora() {
-        const canvas = document.getElementById('aurora-canvas');
-        const ctx = canvas.getContext('2d');
-        let width, height;
-        let time = 0;
-
-        const resize = () => {
-          width = canvas.width = window.innerWidth;
-          height = canvas.height = window.innerHeight;
-        };
-        resize();
-        window.addEventListener('resize', resize);
-
-        const auroras = [
-          { color: [0, 229, 255],   speed: 0.0003,  amp: 0.35, freq: 1.2, phase: 0 },
-          { color: [124, 58, 237],  speed: 0.0002,  amp: 0.28, freq: 0.8, phase: 2.1 },
-          { color: [16, 185, 129],  speed: 0.00025, amp: 0.22, freq: 1.5, phase: 4.2 },
-          { color: [6, 182, 212],   speed: 0.00035, amp: 0.18, freq: 0.6, phase: 1.0 },
-        ];
-
-        const draw = () => {
-          time += 1;
-          ctx.clearRect(0, 0, width, height);
-
-          const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
-          bgGrad.addColorStop(0, '#04060a');
-          bgGrad.addColorStop(0.5, '#060810');
-          bgGrad.addColorStop(1, '#04060a');
-          ctx.fillStyle = bgGrad;
-          ctx.fillRect(0, 0, width, height);
-
-          auroras.forEach(a => {
-            const centerY = height * (0.3 + a.amp * Math.sin(time * a.speed + a.phase));
-            const grad = ctx.createLinearGradient(0, centerY - height * 0.3, 0, centerY + height * 0.3);
-            const [r, g, b] = a.color;
-            grad.addColorStop(0, `rgba(${r},${g},${b},0)`);
-            grad.addColorStop(0.3, `rgba(${r},${g},${b},0.03)`);
-            grad.addColorStop(0.5, `rgba(${r},${g},${b},0.07)`);
-            grad.addColorStop(0.7, `rgba(${r},${g},${b},0.03)`);
-            grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
-
-            ctx.beginPath();
-            ctx.moveTo(0, centerY);
-
-            for (let x = 0; x <= width; x += 8) {
-              const waveY = centerY +
-                Math.sin(x * a.freq * 0.004 + time * a.speed * 3 + a.phase) * height * 0.06 +
-                Math.sin(x * a.freq * 0.009 + time * a.speed * 2.1) * height * 0.03;
-              ctx.lineTo(x, waveY);
-            }
-            ctx.lineTo(width, height);
-            ctx.lineTo(0, height);
-            ctx.closePath();
-            ctx.fillStyle = grad;
-            ctx.fill();
-          });
-
-          if (time % 3 === 0) {
-            ctx.save();
-            for (let i = 0; i < 3; i++) {
-              const sx = Math.random() * width;
-              const sy = Math.random() * height * 0.5;
-              const sr = Math.random() * 1.2;
-              ctx.beginPath();
-              ctx.arc(sx, sy, sr, 0, Math.PI * 2);
-              ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.4 + 0.1})`;
-              ctx.fill();
-            }
-            ctx.restore();
-          }
-
-          requestAnimationFrame(draw);
-        };
-        draw();
-      },
-
-      initHeroEntrance() {
-        const vSvg = document.getElementById('v-svg');
-        const tagline = document.getElementById('hero-tagline');
-
-        gsap.set(vSvg, { scale: 0.7, opacity: 0, transformOrigin: '50% 50%' });
-        gsap.set(tagline, { opacity: 0, y: 20 });
-
-        gsap.timeline({ delay: 0.3 })
-          .to(vSvg, { scale: 1, opacity: 1, duration: 1.4, ease: 'power3.out' })
-          .to(tagline, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }, '-=0.4');
-      },
-
-      initScrollAnimations() {
-        gsap.registerPlugin(ScrollTrigger);
-
-        ScrollTrigger.create({
-          trigger: '#hero',
-          start: 'bottom 60%',
-          onEnter: () => { this.headerVisible = true; },
-          onLeaveBack: () => { this.headerVisible = false; }
-        });
-
-        const vContainer = document.getElementById('v-mask-container');
-        const heroTagline = document.getElementById('hero-tagline');
-
-        gsap.timeline({
-          scrollTrigger: {
-            trigger: '#hero',
-            start: 'top top',
-            end: 'bottom top',
-            scrub: 1.2
-          }
-        })
-          .to(vContainer, { y: '-60vh', scale: 0.1, opacity: 0, ease: 'power2.in' }, 0)
-          .to(heroTagline, { opacity: 0, y: -30, ease: 'power2.in' }, 0);
-
-        document.querySelectorAll('.feature-item').forEach((el, i) => {
-          gsap.to(el, {
-            opacity: 1,
-            clipPath: 'inset(0% 0 0 0)',
-            duration: 0.7,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: el,
-              start: 'top 85%',
-              toggleActions: 'play none none reverse'
-            }
-          });
-        });
-
-        document.querySelectorAll('.stat-item').forEach((el, i) => {
-          gsap.to(el, {
-            opacity: 1,
-            clipPath: 'inset(0% 0 0 0)',
-            duration: 0.6,
-            delay: i * 0.12,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: '#stats',
-              start: 'top 80%',
-              toggleActions: 'play none none reverse'
-            }
-          });
-        });
-
-        document.querySelectorAll('.step-item').forEach((el, i) => {
-          gsap.to(el, {
-            opacity: 1,
-            clipPath: 'inset(0% 0 0 0)',
-            duration: 0.65,
-            delay: i * 0.1,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: '#how-it-works',
-              start: 'top 75%',
-              toggleActions: 'play none none reverse'
-            }
-          });
-        });
-
-        gsap.to('#site-footer', {
-          opacity: 1,
-          clipPath: 'inset(0% 0 0 0)',
-          duration: 0.8,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: '#site-footer',
-            start: 'top 90%',
-            toggleActions: 'play none none reverse'
-          }
-        });
-      }
+    initScrollAnimations() {
+      gsap.registerPlugin(ScrollTrigger);
+      ScrollTrigger.create({
+        trigger: '#hero', start: 'bottom 60%',
+        onEnter: () => { this.headerVisible = true; },
+        onLeaveBack: () => { this.headerVisible = false; }
+      });
+      const vContainer = document.getElementById('v-mask-container');
+      const heroTagline = document.getElementById('hero-tagline');
+      gsap.timeline({ scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1.2 } })
+        .to(vContainer, { y: '-60vh', scale: 0.1, opacity: 0, ease: 'power2.in' }, 0)
+        .to(heroTagline, { opacity: 0, y: -30, ease: 'power2.in' }, 0);
+      document.querySelectorAll('.feature-item').forEach(el => {
+        gsap.to(el, { opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 0.7, ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none reverse' } });
+      });
+      document.querySelectorAll('.stat-item').forEach((el, i) => {
+        gsap.to(el, { opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 0.6, delay: i*0.12, ease: 'power2.out',
+          scrollTrigger: { trigger: '#stats', start: 'top 80%', toggleActions: 'play none none reverse' } });
+      });
+      document.querySelectorAll('.step-item').forEach((el, i) => {
+        gsap.to(el, { opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 0.65, delay: i*0.1, ease: 'power2.out',
+          scrollTrigger: { trigger: '#how-it-works', start: 'top 75%', toggleActions: 'play none none reverse' } });
+      });
+      gsap.to('#site-footer', { opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 0.8, ease: 'power2.out',
+        scrollTrigger: { trigger: '#site-footer', start: 'top 90%', toggleActions: 'play none none reverse' } });
     }
-  }).mount('#app');
-  </script>
+  },
+  mounted() {
+    document.documentElement.lang = this.locale;
+    this.initAurora();
+    this.initScrollAnimations();
+    this.initHeroEntrance();
+  },
+  directives: {
+    // v-click-outside: close dropdown when clicking outside
+    clickOutside: {
+      mounted(el, binding) {
+        el._clickOutsideHandler = e => { if (!el.contains(e.target)) binding.value(e); };
+        document.addEventListener('click', el._clickOutsideHandler);
+      },
+      unmounted(el) { document.removeEventListener('click', el._clickOutsideHandler); }
+    }
+  }
+}).mount('#app');
+</script>
 </body>
 </html>
