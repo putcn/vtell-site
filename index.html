@@ -210,12 +210,23 @@
       background: linear-gradient(135deg, #e8ecf2 0%, #00e5ff 50%, #7c3aed 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
+
+    /* Scroll-reveal base: hidden until .revealed is added */
+    .scroll-reveal {
+      opacity: 0;
+      clip-path: inset(100% 0 0 0);
+      transition: none; /* GSAP handles animation */
+    }
+    .scroll-reveal.revealed {
+      opacity: 1;
+      clip-path: inset(0% 0 0 0);
+    }
+
     .feature-item {
       display: grid; grid-template-columns: 1fr 1fr;
       gap: var(--space-8); align-items: center;
       padding: var(--space-12) 0;
       border-top: 1px solid rgba(255,255,255,0.06);
-      opacity: 0; clip-path: inset(100% 0 0 0);
     }
     .feature-item:last-child { border-bottom: 1px solid rgba(255,255,255,0.06); }
     .feature-number {
@@ -253,7 +264,6 @@
       padding: var(--space-8);
       border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-lg);
       background: rgba(8,12,20,0.6); backdrop-filter: blur(8px);
-      opacity: 0; clip-path: inset(100% 0 0 0);
     }
     .stat-value {
       font-family: 'Space Mono', monospace; font-size: var(--text-2xl); font-weight: 700;
@@ -279,7 +289,6 @@
     }
     .step-item {
       display: flex; gap: var(--space-8); padding: var(--space-8) 0;
-      opacity: 0; clip-path: inset(100% 0 0 0);
     }
     .step-num {
       flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
@@ -342,7 +351,7 @@
       position: relative; z-index: 2; padding: var(--space-12) var(--space-8);
       border-top: 1px solid rgba(255,255,255,0.06);
       display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: var(--space-4); opacity: 0; clip-path: inset(100% 0 0 0);
+      flex-wrap: wrap; gap: var(--space-4);
     }
     .footer-brand { display: flex; align-items: center; gap: var(--space-2); }
     .footer-brand .brand-v {
@@ -516,7 +525,7 @@
     <div class="container">
       <p class="section-label">{{ t('features_label') }}</p>
       <h2 id="features-heading" class="section-title" v-html="t('features_title')"></h2>
-      <div class="feature-item" v-for="(feature, index) in currentFeatures" :key="index">
+      <div class="feature-item scroll-reveal" v-for="(feature, index) in currentFeatures" :key="locale + '-f-' + index">
         <div class="feature-text">
           <p class="feature-number">{{ String(index + 1).padStart(2, '0') }}</p>
           <h3 class="feature-name">{{ feature.title }}</h3>
@@ -534,7 +543,7 @@
   <!-- Stats -->
   <section id="stats" aria-label="Key metrics">
     <div class="stats-grid">
-      <div class="stat-item" v-for="(stat, i) in currentStats" :key="i">
+      <div class="stat-item scroll-reveal" v-for="(stat, i) in currentStats" :key="locale + '-s-' + i">
         <span class="stat-value">{{ stat.value }}</span>
         <span class="stat-label">{{ stat.label }}</span>
       </div>
@@ -546,7 +555,7 @@
     <p class="section-label">{{ t('workflow_label') }}</p>
     <h2 id="how-heading" class="section-title" v-html="t('workflow_title')"></h2>
     <ol class="steps-list" role="list">
-      <li class="step-item" v-for="(step, i) in currentSteps" :key="i">
+      <li class="step-item scroll-reveal" v-for="(step, i) in currentSteps" :key="locale + '-st-' + i">
         <div class="step-num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</div>
         <div class="step-content"><h3>{{ step.title }}</h3><p>{{ step.desc }}</p></div>
       </li>
@@ -583,9 +592,8 @@
 </div>
 
 <script>
-const { createApp } = Vue;
+const { createApp, nextTick } = Vue;
 
-// i18n translations
 const TRANSLATIONS = {
   en: {
     nav_features: 'Features', nav_how: 'How It Works',
@@ -653,7 +661,7 @@ const TRANSLATIONS = {
       { title: '\u5199\u4e0b\u4f60\u7684\u60f3\u6cd5', desc: '\u7528 1\uff5e5 \u53e5\u8bdd\u63cf\u8ff0\u4f60\u7684\u6545\u4e8b\u3002\u7eaa\u5f55\u7247\u3001\u5267\u60c5\u3001\u6559\u7a0b\u3001\u77ed\u7247\u2014\u2014\u4efb\u610f\u9898\u6750\u90fd\u53ef\u4ee5\u3002' },
       { title: 'vtell \u81ea\u52a8\u5199\u5267\u672c', desc: 'LLM \u667a\u80fd\u4f53\u5c06\u60f3\u6cd5\u62c6\u5206\u4e3a\u573a\u666f\uff0c\u7f16\u5199\u573a\u666f\u63cf\u8ff0\u3001\u5bf9\u767d\u548c\u5206\u955c\u5934\u811a\u672c\u3002' },
       { title: '\u89c6\u9891\u753b\u9762\u751f\u6210', desc: '\u5229\u7528\u5f00\u6e90\u89c6\u9891\u6269\u6563\u6a21\u578b\u6e32\u67d3\u6bcf\u4e2a\u573a\u666f\uff0c\u5173\u952e\u5e27\u751f\u6210\u540e\u63d2\u503c\u4e3a\u6d41\u7545\u89c6\u9891\u7247\u6bb5\u3002' },
-      { title: '\u914d\u97f3\u4e0e\u97f3\u6548', desc: 'TTS \u6a21\u578b\u6839\u636e\u573a\u666f\u60c5\u8c03\u5408\u6210\u65c1\u767d\uff0c\u6839\u636e\u6c14\u6c1b\u4e3a\u6bcf\u6bb5\u9009\u53d6\u6216\u521b\u4f5c\u80cc\u666f\u97f3\u4e50\u3002' },
+      { title: '\u914d\u97f3\u4e0e\u97f3\u6548', desc: 'TTS \u6a21\u578b\u6839\u636e\u573a\u666f\u60c5\u8c03\u5408\u6210\u65c1\u767d\uff0c\u6839\u636e\u6c1b\u56f4\u4e3a\u6bcf\u6bb5\u9009\u53d6\u6216\u521b\u4f5c\u80cc\u666f\u97f3\u4e50\u3002' },
       { title: '\u5408\u6210\u5bfc\u51fa', desc: '\u6240\u6709\u89c6\u9891\u7247\u6bb5\u3001\u97f3\u9891\u548c\u8f6c\u573a\u5408\u6210\u4e3a\u6700\u7ec8\u89c6\u9891\u6587\u4ef6\uff0c\u53ef\u76f4\u63a5\u5206\u4eab\u6216\u7ee7\u7eed\u5236\u4f5c\u7cfb\u5217\u3002' }
     ]
   },
@@ -729,7 +737,6 @@ const TRANSLATIONS = {
   }
 };
 
-// Cookie helpers
 function getCookie(name) {
   const m = document.cookie.match('(?:^|; )' + name + '=([^;]*)');
   return m ? decodeURIComponent(m[1]) : null;
@@ -774,9 +781,78 @@ createApp({
       this.langMenuOpen = false;
       setCookie('vtell_locale', code, 365);
       document.documentElement.lang = code;
+      // After Vue re-renders with new locale, re-bind scroll animations
+      nextTick(() => { this.bindScrollReveals(); });
     },
     closeLangMenu() { this.langMenuOpen = false; },
     scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); },
+
+    // Reveal all .scroll-reveal elements that are already in or above the viewport
+    revealInView() {
+      document.querySelectorAll('.scroll-reveal').forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight) {
+          el.classList.add('revealed');
+          gsap.set(el, { opacity: 1, clipPath: 'inset(0% 0 0 0)' });
+        }
+      });
+    },
+
+    // Bind GSAP ScrollTrigger to all .scroll-reveal elements
+    bindScrollReveals() {
+      // Kill existing ScrollTriggers for reveal elements to avoid duplicates
+      ScrollTrigger.getAll().forEach(st => {
+        if (st.vars && st.vars._isReveal) st.kill();
+      });
+
+      document.querySelectorAll('.scroll-reveal').forEach((el, i) => {
+        // If already in view, show immediately
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight) {
+          gsap.set(el, { opacity: 1, clipPath: 'inset(0% 0 0 0)' });
+          el.classList.add('revealed');
+          return;
+        }
+        // Reset to hidden
+        gsap.set(el, { opacity: 0, clipPath: 'inset(100% 0 0 0)' });
+        el.classList.remove('revealed');
+
+        const delay = el.classList.contains('stat-item') || el.classList.contains('step-item')
+          ? (Array.from(el.parentElement.children).indexOf(el)) * 0.12
+          : 0;
+
+        gsap.to(el, {
+          opacity: 1,
+          clipPath: 'inset(0% 0 0 0)',
+          duration: 0.7,
+          delay,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 88%',
+            toggleActions: 'play none none reverse',
+            _isReveal: true,
+          }
+        });
+      });
+
+      // Footer reveal
+      const footer = document.getElementById('site-footer');
+      if (footer) {
+        const rect = footer.getBoundingClientRect();
+        if (rect.top < window.innerHeight) {
+          gsap.set(footer, { opacity: 1, clipPath: 'inset(0% 0 0 0)' });
+        } else {
+          gsap.set(footer, { opacity: 0, clipPath: 'inset(100% 0 0 0)' });
+          gsap.to(footer, {
+            opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 0.8, ease: 'power2.out',
+            scrollTrigger: { trigger: footer, start: 'top 90%', toggleActions: 'play none none reverse', _isReveal: true }
+          });
+        }
+      }
+
+      ScrollTrigger.refresh();
+    },
 
     initAurora() {
       const canvas = document.getElementById('aurora-canvas');
@@ -836,30 +912,23 @@ createApp({
 
     initScrollAnimations() {
       gsap.registerPlugin(ScrollTrigger);
+
+      // Header visibility
       ScrollTrigger.create({
         trigger: '#hero', start: 'bottom 60%',
         onEnter: () => { this.headerVisible = true; },
         onLeaveBack: () => { this.headerVisible = false; }
       });
+
+      // V shrink on scroll
       const vContainer = document.getElementById('v-mask-container');
       const heroTagline = document.getElementById('hero-tagline');
       gsap.timeline({ scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1.2 } })
         .to(vContainer, { y: '-60vh', scale: 0.1, opacity: 0, ease: 'power2.in' }, 0)
         .to(heroTagline, { opacity: 0, y: -30, ease: 'power2.in' }, 0);
-      document.querySelectorAll('.feature-item').forEach(el => {
-        gsap.to(el, { opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 0.7, ease: 'power2.out',
-          scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none reverse' } });
-      });
-      document.querySelectorAll('.stat-item').forEach((el, i) => {
-        gsap.to(el, { opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 0.6, delay: i*0.12, ease: 'power2.out',
-          scrollTrigger: { trigger: '#stats', start: 'top 80%', toggleActions: 'play none none reverse' } });
-      });
-      document.querySelectorAll('.step-item').forEach((el, i) => {
-        gsap.to(el, { opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 0.65, delay: i*0.1, ease: 'power2.out',
-          scrollTrigger: { trigger: '#how-it-works', start: 'top 75%', toggleActions: 'play none none reverse' } });
-      });
-      gsap.to('#site-footer', { opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 0.8, ease: 'power2.out',
-        scrollTrigger: { trigger: '#site-footer', start: 'top 90%', toggleActions: 'play none none reverse' } });
+
+      // Bind scroll reveals for content sections
+      this.bindScrollReveals();
     }
   },
   mounted() {
